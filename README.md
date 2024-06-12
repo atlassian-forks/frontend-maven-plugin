@@ -18,7 +18,7 @@ There are a few changes that are not wanted upstream, but are useful to developi
 
 ## Issues, Contributing
 
-Thank you for considering a contribution! Pull requests, issues and comments are welcome. 
+Thank you for considering a contribution! Pull requests, issues and comments are welcome.
 
 Please try to contribute upstream first. It maximises the value out of every change and keeps this fork easier to maintain. You can check [upstream's issue tracker](https://github.com/eirslett/frontend-maven-plugin/issues) and [pull requests](https://github.com/eirslett/frontend-maven-plugin/pulls) to gauge maintainer opinion and avoid duplicate work.
 
