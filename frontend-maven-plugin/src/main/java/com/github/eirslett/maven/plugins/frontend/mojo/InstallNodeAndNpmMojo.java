@@ -49,6 +49,12 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
     private String nodeVersion;
 
     /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false, readonly = true)
+    private String nodeVersionFile;
+
+    /**
      * The version of NPM to install.
      */
     @Parameter(property = "npmVersion", required = false, defaultValue = "provided")
@@ -84,7 +90,7 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
         String npmDownloadRoot = getNpmDownloadRoot();
         Server server = MojoUtils.decryptServer(serverId, session, decrypter);
 
-        String nodeVersion = NodeVersionDetector.getNodeVersion(project.getBasedir(), this.nodeVersion);
+        String nodeVersion = NodeVersionDetector.getNodeVersion(project.getBasedir(), this.nodeVersion, this.nodeVersionFile);
 
         if (isNull(nodeVersion)) {
             throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");

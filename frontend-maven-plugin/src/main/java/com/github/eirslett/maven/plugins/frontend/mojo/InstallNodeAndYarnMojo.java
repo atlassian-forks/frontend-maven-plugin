@@ -45,6 +45,12 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
     private String nodeVersion;
 
     /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false, readonly = true)
+    private String nodeVersionFile;
+
+    /**
      * The version of Yarn to install. IMPORTANT! Most Yarn names start with 'v', for example 'v0.15.0'.
      */
     @Parameter(property = "yarnVersion", required = true)
@@ -78,7 +84,7 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
         ProxyConfig proxyConfig = MojoUtils.getProxyConfig(this.session, this.decrypter);
         Server server = MojoUtils.decryptServer(this.serverId, this.session, this.decrypter);
 
-        String nodeVersion = NodeVersionDetector.getNodeVersion(project.getBasedir(), this.nodeVersion);
+        String nodeVersion = NodeVersionDetector.getNodeVersion(project.getBasedir(), this.nodeVersion, this.nodeVersionFile);
 
         if (isNull(nodeVersion)) {
             throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
