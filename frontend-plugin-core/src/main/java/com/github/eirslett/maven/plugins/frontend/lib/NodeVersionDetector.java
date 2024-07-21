@@ -91,7 +91,7 @@ public class NodeVersionDetector {
             }
         }
 
-        Path toolsVersionFilePath = Paths.get(directoryPath, "tools-version");
+        Path toolsVersionFilePath = Paths.get(directoryPath, ".tools-version");
         File toolsVersionFile = toolsVersionFilePath.toFile();
         if (toolsVersionFile.exists()) {
             if (!toolsVersionFile.canRead()) {
