@@ -30,6 +30,8 @@ public class NodeVersionDetector {
     }
 
     public static String recursivelyFindVersion(File directory) throws Exception {
+        Logger logger = getLogger(NodeVersionDetector.class);
+
         if (!directory.canRead()) {
             throw new Exception("Tried to find a Node version file but giving up because it's not possible to read " +
                     directory.getPath());
@@ -57,6 +59,7 @@ public class NodeVersionDetector {
                         continue;
                     }
 
+                    logger.info("Found the version of Node in: " + nodeVersionFilePath);
                     return trimmedLine;
                 }
             }
@@ -82,6 +85,7 @@ public class NodeVersionDetector {
                         continue;
                     }
 
+                    logger.info("Found the version of Node in: " + nvmrcFilePath);
                     return trimmedLine;
                 }
             }
@@ -107,6 +111,7 @@ public class NodeVersionDetector {
                         continue;
                     }
 
+                    logger.info("Found the version of Node in: " + toolsVersionFilePath);
                     return trimmedLine.replaceAll("node(js)?\\s*", "");
                 }
             }
