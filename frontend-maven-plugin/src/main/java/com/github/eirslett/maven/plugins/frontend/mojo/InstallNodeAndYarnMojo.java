@@ -3,6 +3,7 @@ package com.github.eirslett.maven.plugins.frontend.mojo;
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
 import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionParser;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import com.github.eirslett.maven.plugins.frontend.lib.YarnInstaller;
 import org.apache.maven.execution.MavenSession;
@@ -14,6 +15,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 
+import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionParser.fixupMinorVersionErrors;
 import static com.github.eirslett.maven.plugins.frontend.mojo.YarnUtils.isYarnrcYamlFilePresent;
 import static java.util.Objects.isNull;
 
@@ -82,18 +84,24 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
             throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
         }
 
+        if (!NodeVersionParser.validateVersion(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
+        }
+
+        String validNodeVersion = fixupMinorVersionErrors(nodeVersion);
+
         boolean isYarnYamlFilePresent = isYarnrcYamlFilePresent(this.session, this.workingDirectory);
 
         if (null != server) {
             factory.getNodeInstaller(proxyConfig).setNodeDownloadRoot(this.nodeDownloadRoot)
-                .setNodeVersion(nodeVersion).setPassword(server.getPassword())
+                .setNodeVersion(validNodeVersion).setPassword(server.getPassword())
                 .setUserName(server.getUsername()).install();
             factory.getYarnInstaller(proxyConfig).setYarnDownloadRoot(this.yarnDownloadRoot)
                 .setYarnVersion(this.yarnVersion).setUserName(server.getUsername())
                 .setPassword(server.getPassword()).setIsYarnBerry(isYarnYamlFilePresent).install();
         } else {
             factory.getNodeInstaller(proxyConfig).setNodeDownloadRoot(this.nodeDownloadRoot)
-                .setNodeVersion(nodeVersion).install();
+                .setNodeVersion(validNodeVersion).install();
             factory.getYarnInstaller(proxyConfig).setYarnDownloadRoot(this.yarnDownloadRoot)
                 .setYarnVersion(this.yarnVersion).setIsYarnBerry(isYarnYamlFilePresent).install();
         }
