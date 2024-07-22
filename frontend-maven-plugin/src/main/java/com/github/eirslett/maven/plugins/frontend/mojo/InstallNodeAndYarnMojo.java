@@ -1,7 +1,6 @@
 package com.github.eirslett.maven.plugins.frontend.mojo;
 
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
-import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionParser;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
@@ -47,7 +46,7 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
     /**
      * The path to the file that contains the Node version to use
      */
-    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false, readonly = true)
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
     private String nodeVersionFile;
 
     /**
@@ -80,7 +79,7 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
     }
 
     @Override
-    public void execute(FrontendPluginFactory factory) throws InstallationException, LifecycleExecutionException {
+    public void execute(FrontendPluginFactory factory) throws Exception {
         ProxyConfig proxyConfig = MojoUtils.getProxyConfig(this.session, this.decrypter);
         Server server = MojoUtils.decryptServer(this.serverId, this.session, this.decrypter);
 

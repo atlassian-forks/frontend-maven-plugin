@@ -75,7 +75,7 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
         return "test".equals(phase) || "integration-test".equals(phase);
     }
 
-    protected abstract void execute(FrontendPluginFactory factory) throws FrontendException, LifecycleExecutionException;
+    protected abstract void execute(FrontendPluginFactory factory) throws Exception;
 
     /**
      * Implemented by children to determine if this execution should be skipped.
@@ -100,7 +100,7 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
                 } else {
                     throw new MojoFailureException("Failed to run task", e);
                 }
-            } catch (FrontendException | LifecycleExecutionException e) {
+            } catch (Exception e) {
                 throw MojoUtils.toMojoFailureException(e);
             }
         } else {

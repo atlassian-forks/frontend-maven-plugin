@@ -1,7 +1,6 @@
 package com.github.eirslett.maven.plugins.frontend.mojo;
 
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
-import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionParser;
 import com.github.eirslett.maven.plugins.frontend.lib.PnpmInstaller;
@@ -12,8 +11,8 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.Server;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
 
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionParser.fixupMinorVersionErrors;
 import static java.util.Objects.isNull;
@@ -51,7 +50,7 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
     /**
      * The path to the file that contains the Node version to use
      */
-    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false, readonly = true)
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
     private String nodeVersionFile;
 
     /**
@@ -85,7 +84,7 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
     }
 
     @Override
-    public void execute(FrontendPluginFactory factory) throws InstallationException, LifecycleExecutionException {
+    public void execute(FrontendPluginFactory factory) throws Exception {
         ProxyConfig proxyConfig = MojoUtils.getProxyConfig(session, decrypter);
         // Use different names to avoid confusion with fields `nodeDownloadRoot` and
         // `pnpmDownloadRoot`.
