@@ -44,7 +44,7 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
     /**
      * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
      */
-    @Parameter(property = "nodeVersion", defaultValue = "", required = false, readonly = true)
+    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
     private String nodeVersion;
 
     /**
