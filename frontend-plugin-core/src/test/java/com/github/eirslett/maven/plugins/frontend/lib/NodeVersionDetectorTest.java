@@ -26,4 +26,17 @@ public class NodeVersionDetectorTest {
                 "\t/\tcomment"
         )).get());
     }
+
+    @Test
+    public void testNvmrcFileParsing_shouldIgnoreEmptyLines() {
+        assertEquals("v1.0.0", readNvmrcFileLines(asList(
+                "\t",
+                "\t \r",
+                "",
+                "v1.0.0",
+                "\t",
+                "\t \r",
+                ""
+        )).get());
+    }
 }
