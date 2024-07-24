@@ -13,7 +13,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class NodeVersionDetector {
 
-    private static final String TOOLS_VERSION_FILENAME = ".tools-version";
+    private static final String TOOL_VERSIONS_FILENAME = ".tool-versions";
 
     public static String getNodeVersion(File baseDir, String providedNodeVersion, String genericNodeVersionFile) throws Exception {
         Logger logger = getLogger(NodeVersionDetector.class);
@@ -29,8 +29,8 @@ public class NodeVersionDetector {
                 throw new Exception("The Node version file doesn't seem to exist: " + genericNodeVersionFileFile);
             }
 
-            if (genericNodeVersionFile.endsWith(TOOLS_VERSION_FILENAME)) {
-                return readToolsVersionFile(genericNodeVersionFileFile, genericNodeVersionFileFile.toPath(), logger);
+            if (genericNodeVersionFile.endsWith(TOOL_VERSIONS_FILENAME)) {
+                return readToolVersionsFile(genericNodeVersionFileFile, genericNodeVersionFileFile.toPath(), logger);
             } else {
                 return readNvmrcFile(genericNodeVersionFileFile, genericNodeVersionFileFile.toPath(), logger);
             }
@@ -69,10 +69,10 @@ public class NodeVersionDetector {
             if (trimmedLine != null) return trimmedLine;
         }
 
-        Path toolsVersionFilePath = Paths.get(directoryPath, TOOLS_VERSION_FILENAME);
-        File toolsVersionFile = toolsVersionFilePath.toFile();
-        if (toolsVersionFile.exists()) {
-            String trimmedLine = readToolsVersionFile(toolsVersionFile, toolsVersionFilePath, logger);
+        Path toolVersionsFilePath = Paths.get(directoryPath, TOOL_VERSIONS_FILENAME);
+        File toolVersionsFile = toolVersionsFilePath.toFile();
+        if (toolVersionsFile.exists()) {
+            String trimmedLine = readToolVersionsFile(toolVersionsFile, toolVersionsFilePath, logger);
             if (trimmedLine != null) return trimmedLine;
         }
 
@@ -109,12 +109,12 @@ public class NodeVersionDetector {
         return null;
     }
 
-    private static String readToolsVersionFile(File toolsVersionFile, Path toolsVersionFilePath, Logger logger) throws Exception {
-        if (!toolsVersionFile.canRead()) {
-            throw new Exception("Tried to read the node version from the file, but giving up because it's possible to read" + toolsVersionFile.getPath());
+    private static String readToolVersionsFile(File toolVersionsFile, Path toolVersionsFilePath, Logger logger) throws Exception {
+        if (!toolVersionsFile.canRead()) {
+            throw new Exception("Tried to read the node version from the file, but giving up because it's possible to read" + toolVersionsFile.getPath());
         }
 
-        List<String> lines = Files.readAllLines(toolsVersionFilePath);
+        List<String> lines = Files.readAllLines(toolVersionsFilePath);
         for (String line: lines) {
             if (!isNull(line)) {
                 String trimmedLine = line.trim();
@@ -127,7 +127,7 @@ public class NodeVersionDetector {
                     continue;
                 }
 
-                logger.info("Found the version of Node in: " + toolsVersionFilePath);
+                logger.info("Found the version of Node in: " + toolVersionsFilePath);
                 return trimmedLine.replaceAll("node(js)?\\s*", "");
             }
         }
