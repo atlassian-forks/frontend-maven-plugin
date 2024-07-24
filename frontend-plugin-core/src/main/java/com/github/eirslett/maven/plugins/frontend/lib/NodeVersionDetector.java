@@ -1,5 +1,6 @@
 package com.github.eirslett.maven.plugins.frontend.lib;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -7,8 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Objects.isNull;
+import static java.util.Optional.empty;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class NodeVersionDetector {
@@ -90,6 +93,19 @@ public class NodeVersionDetector {
         }
 
         List<String> lines = Files.readAllLines(nvmrcFilePath);
+        Optional<String> version = readNvmrcFileLines(lines);
+        if (version.isPresent()) {
+            logger.info("Found the version of Node in: " + nvmrcFilePath);
+        }
+        return version.orElse(null);
+    }
+
+    /**
+     * We skip over a lot of comments. If there's no documentation in the POMs then we need it somewhere. Also, FNM,
+     * NVS, and NVM have varying levels of comment acceptance, so we have to be the most forgiving.
+     */
+    @VisibleForTesting
+    static Optional<String> readNvmrcFileLines(List<String> lines) {
         for (String line: lines) {
             if (!isNull(line)) {
                 String trimmedLine = line.trim();
@@ -102,11 +118,19 @@ public class NodeVersionDetector {
                     continue;
                 }
 
-                logger.info("Found the version of Node in: " + nvmrcFilePath);
-                return trimmedLine;
+                trimmedLine = trimmedLine.replaceFirst(
+                        "(" + // we only want what's part of the comment, we assume everything at the start is the
+                                // version
+                        "\\s*" + // Okay, fine we also remove any whitespace too, this isn't part of the version
+                        "[#!/]" + // these characters will probably not be part of the version, but they look like the
+                                // start of a comment
+                        ".*)", // everything else to the end of the line
+                        "");
+
+                return Optional.of(trimmedLine);
             }
         }
-        return null;
+        return empty();
     }
 
     private static String readToolVersionsFile(File toolVersionsFile, Path toolVersionsFilePath, Logger logger) throws Exception {
