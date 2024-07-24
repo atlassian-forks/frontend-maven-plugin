@@ -18,7 +18,7 @@ public class NodeVersionDetector {
 
     private static final String TOOL_VERSIONS_FILENAME = ".tool-versions";
 
-    public static String getNodeVersion(File baseDir, String providedNodeVersion, String genericNodeVersionFile) throws Exception {
+    public static String getNodeVersion(File workingDir, String providedNodeVersion, String genericNodeVersionFile) throws Exception {
         Logger logger = getLogger(NodeVersionDetector.class);
 
         if (!isNull(providedNodeVersion) && !providedNodeVersion.trim().isEmpty()) {
@@ -40,7 +40,7 @@ public class NodeVersionDetector {
         }
 
         try {
-            return recursivelyFindVersion(baseDir);
+            return recursivelyFindVersion(workingDir);
         } catch (Throwable throwable) {
             logger.debug("Going to use the configuration node version, failed to find a file with the version because",
                     throwable);

@@ -95,7 +95,7 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
         String resolvedPnpmDownloadRoot = getPnpmDownloadRoot();
         Server server = MojoUtils.decryptServer(serverId, session, decrypter);
 
-        String nodeVersion = NodeVersionDetector.getNodeVersion(project.getBasedir(), this.nodeVersion, this.nodeVersionFile);
+        String nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile);
 
         if (isNull(nodeVersion)) {
             throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");

@@ -83,7 +83,7 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
         ProxyConfig proxyConfig = MojoUtils.getProxyConfig(this.session, this.decrypter);
         Server server = MojoUtils.decryptServer(this.serverId, this.session, this.decrypter);
 
-        String nodeVersion = NodeVersionDetector.getNodeVersion(project.getBasedir(), this.nodeVersion, this.nodeVersionFile);
+        String nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile);
 
         if (isNull(nodeVersion)) {
             throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
