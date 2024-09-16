@@ -9,22 +9,6 @@
 
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <artifactId>exec-maven-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>Install nvm</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>exec</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <executable>${basedir}/install-nvm.sh</executable>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
@@ -32,8 +16,9 @@
                 <version>@project.version@</version>
 
                 <configuration>
-                    <nodeVersion>v20.15.1</nodeVersion>
+                    <nodeVersion>20.15.1</nodeVersion>
                     <workingDirectory>${basedir}</workingDirectory>
+                    <useNodeVersionManager>true</useNodeVersionManager>
                 </configuration>
 
                 <executions>

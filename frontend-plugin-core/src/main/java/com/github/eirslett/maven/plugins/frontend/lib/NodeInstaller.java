@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerRunner;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,17 +24,20 @@ public class NodeInstaller {
 
     private final Logger logger;
 
-    private final InstallConfig config;
+    private final InstallConfig installConfig;
+
+    private final VersionManagerCache versionManagerCache;
 
     private final ArchiveExtractor archiveExtractor;
 
     private final FileDownloader fileDownloader;
 
-    NodeInstaller(InstallConfig config, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
+    NodeInstaller(InstallConfig config, VersionManagerCache versionManagerCache, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
         this.logger = LoggerFactory.getLogger(getClass());
-        this.config = config;
+        this.installConfig = config;
         this.archiveExtractor = archiveExtractor;
         this.fileDownloader = fileDownloader;
+        this.versionManagerCache = versionManagerCache;
     }
 
     public NodeInstaller setNodeVersion(String nodeVersion) {
@@ -78,14 +83,22 @@ public class NodeInstaller {
         // use static lock object for a synchronized block
         synchronized (LOCK) {
             if (this.nodeDownloadRoot == null || this.nodeDownloadRoot.isEmpty()) {
-                this.nodeDownloadRoot = this.config.getPlatform().getNodeDownloadRoot();
+                this.nodeDownloadRoot = this.installConfig.getPlatform().getNodeDownloadRoot();
             }
+
+            if (this.versionManagerCache.isVersionManagerAvailable()) {
+                VersionManagerRunner versionManagerRunner = new VersionManagerRunner(installConfig, versionManagerCache);
+                versionManagerRunner.installNodeAndUpdateCaches(this.nodeVersion);
+                return;
+            }
+
             if (!nodeIsAlreadyInstalled()) {
                 this.logger.info("Installing node version {}", this.nodeVersion);
+
                 if (!this.nodeVersion.startsWith("v")) {
                     this.logger.warn("Node version does not start with naming convention 'v'.");
                 }
-                if (this.config.getPlatform().isWindows()) {
+                if (this.installConfig.getPlatform().isWindows()) {
                     if (npmProvided()) {
                         installNodeWithNpmForWindows();
                     } else {
@@ -100,7 +113,7 @@ public class NodeInstaller {
 
     private boolean nodeIsAlreadyInstalled() {
         try {
-            NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.config);
+            NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.installConfig, versionManagerCache);
             File nodeFile = executorConfig.getNodePath();
             if (nodeFile.exists()) {
                 final String version =
@@ -126,17 +139,17 @@ public class NodeInstaller {
     private void installNodeDefault() throws InstallationException {
         try {
             final String longNodeFilename =
-                this.config.getPlatform().getLongNodeFilename(this.nodeVersion, false);
+                this.installConfig.getPlatform().getLongNodeFilename(this.nodeVersion, false);
             String downloadUrl = this.nodeDownloadRoot
-                + this.config.getPlatform().getNodeDownloadFilename(this.nodeVersion, false);
-            String classifier = this.config.getPlatform().getNodeClassifier(this.nodeVersion);
+                + this.installConfig.getPlatform().getNodeDownloadFilename(this.nodeVersion, false);
+            String classifier = this.installConfig.getPlatform().getNodeClassifier(this.nodeVersion);
 
             File tmpDirectory = getTempDirectory();
 
             CacheDescriptor cacheDescriptor = new CacheDescriptor("node", this.nodeVersion, classifier,
-                this.config.getPlatform().getArchiveExtension());
+                this.installConfig.getPlatform().getArchiveExtension());
 
-            File archive = this.config.getCacheResolver().resolve(cacheDescriptor);
+            File archive = this.installConfig.getCacheResolver().resolve(cacheDescriptor);
 
             downloadFileIfMissing(downloadUrl, archive, this.userName, this.password);
 
@@ -214,17 +227,17 @@ public class NodeInstaller {
     private void installNodeWithNpmForWindows() throws InstallationException {
         try {
             final String longNodeFilename =
-                this.config.getPlatform().getLongNodeFilename(this.nodeVersion, true);
+                this.installConfig.getPlatform().getLongNodeFilename(this.nodeVersion, true);
             String downloadUrl = this.nodeDownloadRoot
-                + this.config.getPlatform().getNodeDownloadFilename(this.nodeVersion, true);
-            String classifier = this.config.getPlatform().getNodeClassifier(this.nodeVersion);
+                + this.installConfig.getPlatform().getNodeDownloadFilename(this.nodeVersion, true);
+            String classifier = this.installConfig.getPlatform().getNodeClassifier(this.nodeVersion);
 
             File tmpDirectory = getTempDirectory();
 
             CacheDescriptor cacheDescriptor = new CacheDescriptor("node", this.nodeVersion, classifier,
-                this.config.getPlatform().getArchiveExtension());
+                this.installConfig.getPlatform().getArchiveExtension());
 
-            File archive = this.config.getCacheResolver().resolve(cacheDescriptor);
+            File archive = this.installConfig.getCacheResolver().resolve(cacheDescriptor);
 
             downloadFileIfMissing(downloadUrl, archive, this.userName, this.password);
 
@@ -269,18 +282,18 @@ public class NodeInstaller {
 
     private void installNodeForWindows() throws InstallationException {
         final String downloadUrl = this.nodeDownloadRoot
-            + this.config.getPlatform().getNodeDownloadFilename(this.nodeVersion, false);
+            + this.installConfig.getPlatform().getNodeDownloadFilename(this.nodeVersion, false);
         try {
             File destinationDirectory = getInstallDirectory();
 
             File destination = new File(destinationDirectory, "node.exe");
 
-            String classifier = this.config.getPlatform().getNodeClassifier(this.nodeVersion);
+            String classifier = this.installConfig.getPlatform().getNodeClassifier(this.nodeVersion);
 
             CacheDescriptor cacheDescriptor =
                 new CacheDescriptor("node", this.nodeVersion, classifier, "exe");
 
-            File binary = this.config.getCacheResolver().resolve(cacheDescriptor);
+            File binary = this.installConfig.getCacheResolver().resolve(cacheDescriptor);
 
             downloadFileIfMissing(downloadUrl, binary, this.userName, this.password);
 
@@ -305,7 +318,7 @@ public class NodeInstaller {
     }
 
     private File getInstallDirectory() {
-        File installDirectory = new File(this.config.getInstallDirectory(), INSTALL_PATH);
+        File installDirectory = new File(this.installConfig.getInstallDirectory(), INSTALL_PATH);
         if (!installDirectory.exists()) {
             this.logger.debug("Creating install directory {}", installDirectory);
             installDirectory.mkdirs();

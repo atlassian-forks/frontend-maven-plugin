@@ -59,6 +59,9 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
     private RepositorySystemSession repositorySystemSession;
 
+    @Parameter(property = "useNodeVersionManager", readonly = true, defaultValue = "false")
+    private boolean useNodeVersionManager;
+
     /**
      * Determines if this execution should be skipped.
      */
@@ -92,7 +95,7 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
             }
             try {
                 execute(new FrontendPluginFactory(workingDirectory, installDirectory,
-                        new RepositoryCacheResolver(repositorySystemSession)));
+                        new RepositoryCacheResolver(repositorySystemSession), useNodeVersionManager));
             } catch (TaskRunnerException e) {
                 if (testFailureIgnore && isTestingPhase()) {
                     getLog().error("There are test failures.\nFailed to run task: " + e.getMessage(), e);

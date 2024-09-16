@@ -1,5 +1,10 @@
 package com.github.eirslett.maven.plugins.frontend.lib;
 
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerRunner;
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerType;
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerLocator;
+
 import java.io.File;
 
 public final class FrontendPluginFactory {
@@ -10,26 +15,45 @@ public final class FrontendPluginFactory {
     private final File workingDirectory;
     private final File installDirectory;
     private final CacheResolver cacheResolver;
+    private final boolean useNodeVersionManager;
 
     public FrontendPluginFactory(File workingDirectory, File installDirectory){
         this(workingDirectory, installDirectory, getDefaultCacheResolver(installDirectory));
     }
 
     public FrontendPluginFactory(File workingDirectory, File installDirectory, CacheResolver cacheResolver){
+        this(workingDirectory, installDirectory, cacheResolver, false);
+    }
+
+    public FrontendPluginFactory(File workingDirectory, File installDirectory, CacheResolver cacheResolver, boolean useNodeVersionManager){
         this.workingDirectory = workingDirectory;
         this.installDirectory = installDirectory;
         this.cacheResolver = cacheResolver;
+        this.useNodeVersionManager = useNodeVersionManager;
+
+        initializeGlobalCache();
+    }
+
+    private void initializeGlobalCache() {
+        InstallConfig installConfig = new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform, useNodeVersionManager);
+        GlobalCache.setInstallConfig(installConfig);
+
+        VersionManagerLocator versionManagerLocator = new VersionManagerLocator(installConfig);
+        VersionManagerType versionManagerType = versionManagerLocator.findAvailable();
+        GlobalCache.setVersionManagerCache(
+            new VersionManagerCache(versionManagerType)
+        );
     }
 
     public BunInstaller getBunInstaller(ProxyConfig proxy) {
         return new BunInstaller(getInstallConfig(), new DefaultArchiveExtractor(), new DefaultFileDownloader(proxy));
     }
     public NodeInstaller getNodeInstaller(ProxyConfig proxy) {
-        return new NodeInstaller(getInstallConfig(), new DefaultArchiveExtractor(), new DefaultFileDownloader(proxy));
+        return new NodeInstaller(getInstallConfig(), getVersionManagerCache(), new DefaultArchiveExtractor(), new DefaultFileDownloader(proxy));
     }
 
     public NPMInstaller getNPMInstaller(ProxyConfig proxy) {
-        return new NPMInstaller(getInstallConfig(), new DefaultArchiveExtractor(), new DefaultFileDownloader(proxy));
+        return new NPMInstaller(getInstallConfig(), getVersionManagerCache(), new DefaultArchiveExtractor(), new DefaultFileDownloader(proxy));
     }
 
     public PnpmInstaller getPnpmInstaller(ProxyConfig proxy) {
@@ -88,12 +112,20 @@ public final class FrontendPluginFactory {
         return new DefaultWebpackRunner(getExecutorConfig());
     }
 
+    public VersionManagerRunner getVersionManagerRunner() {
+        return new VersionManagerRunner(getInstallConfig(), getVersionManagerCache());
+    }
+
     private NodeExecutorConfig getExecutorConfig() {
-        return new InstallNodeExecutorConfig(getInstallConfig());
+        return new InstallNodeExecutorConfig(getInstallConfig(), getVersionManagerCache());
     }
 
     private InstallConfig getInstallConfig() {
-        return new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform);
+        return GlobalCache.getInstallConfig();
+    }
+
+    private VersionManagerCache getVersionManagerCache() {
+        return GlobalCache.getVersionManagerCache();
     }
 
     private static final CacheResolver getDefaultCacheResolver(File root) {

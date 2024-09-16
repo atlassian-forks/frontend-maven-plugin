@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jdk.jfr.internal.LogLevel;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -19,18 +20,7 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.slf4j.Logger;
 
-final class ProcessExecutionException extends Exception {
-    private static final long serialVersionUID = 1L;
-
-    public ProcessExecutionException(String message) {
-        super(message);
-    }
-    public ProcessExecutionException(Throwable cause) {
-        super(cause);
-    }
-}
-
-final class ProcessExecutor {
+public final class ProcessExecutor {
     private final static String PATH_ENV_VAR = "PATH";
 
     private final Map<String, String> environment;
@@ -64,7 +54,7 @@ final class ProcessExecutor {
         return execute(logger, stdout, stdout);
     }
 
-    private int execute(final Logger logger, final OutputStream stdout, final OutputStream stderr)
+    public int execute(final Logger logger, final OutputStream stdout, final OutputStream stderr)
             throws ProcessExecutionException {
         logger.debug("Executing command line {}", commandLine);
         try {
