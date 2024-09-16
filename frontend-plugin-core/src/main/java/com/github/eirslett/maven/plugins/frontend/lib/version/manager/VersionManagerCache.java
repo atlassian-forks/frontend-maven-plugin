@@ -14,6 +14,10 @@ public class VersionManagerCache {
         this.versionManagerType = versionManagerType;
     }
 
+    public VersionManagerCache() {
+
+    }
+
     public VersionManagerType getVersionManagerType() {
         return versionManagerType;
     }

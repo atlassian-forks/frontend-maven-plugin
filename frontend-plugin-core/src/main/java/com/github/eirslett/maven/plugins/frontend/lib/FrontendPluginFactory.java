@@ -38,11 +38,15 @@ public final class FrontendPluginFactory {
         InstallConfig installConfig = new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform, useNodeVersionManager);
         GlobalCache.setInstallConfig(installConfig);
 
-        VersionManagerLocator versionManagerLocator = new VersionManagerLocator(installConfig);
-        VersionManagerType versionManagerType = versionManagerLocator.findAvailable();
-        GlobalCache.setVersionManagerCache(
-            new VersionManagerCache(versionManagerType)
-        );
+        if (installConfig.isUseNodeVersionManager()) {
+            VersionManagerLocator versionManagerLocator = new VersionManagerLocator(installConfig);
+            VersionManagerType versionManagerType = versionManagerLocator.findAvailable();
+            GlobalCache.setVersionManagerCache(
+                new VersionManagerCache(versionManagerType)
+            );
+        } else {
+            GlobalCache.setVersionManagerCache(new VersionManagerCache());
+        }
     }
 
     public BunInstaller getBunInstaller(ProxyConfig proxy) {
@@ -130,5 +134,11 @@ public final class FrontendPluginFactory {
 
     private static final CacheResolver getDefaultCacheResolver(File root) {
         return new DirectoryCacheResolver(new File(root, DEFAULT_CACHE_PATH));
+    }
+
+    public void loadVersionManager() {
+        if (getInstallConfig().isUseNodeVersionManager()) {
+            getVersionManagerRunner().populateCache();
+        }
     }
 }
