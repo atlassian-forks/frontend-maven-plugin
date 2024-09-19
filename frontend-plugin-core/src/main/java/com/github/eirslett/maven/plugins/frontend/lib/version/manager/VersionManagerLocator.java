@@ -1,31 +1,25 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerClient;
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerFactory;
 
 import java.util.Arrays;
 
 public class VersionManagerLocator {
 
-    private final ShellExecutor shellExecutor;
+    private final InstallConfig installConfig;
 
     public VersionManagerLocator(InstallConfig installConfig) {
-        this.shellExecutor = new ShellExecutor(installConfig);
+        this.installConfig = installConfig;
     }
 
     public VersionManagerType findAvailable() {
+        VersionManagerFactory versionManagerFactory = new VersionManagerFactory(installConfig);
         for (VersionManagerType versionManagerType : VersionManagerType.values()) {
-            if(isVersionManagerLoaded(versionManagerType.getExecutable())) return versionManagerType;
+            VersionManagerClient versionManagerClient = versionManagerFactory.getClient(versionManagerType);
+            if (versionManagerClient.isInstalled()) return versionManagerType;
         }
         return null;
-    }
-
-    private boolean isVersionManagerLoaded(String executable) {
-        String result = shellExecutor.execute(Arrays.asList("command", "-v", executable));
-        if (!result.isEmpty()) {
-            // needed to mock out version managers in tests
-            String version = shellExecutor.execute(Arrays.asList(executable, "--version"));
-            return !version.isEmpty();
-        }
-        return false;
     }
 }

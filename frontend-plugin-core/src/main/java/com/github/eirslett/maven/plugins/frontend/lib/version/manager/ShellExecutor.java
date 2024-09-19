@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,27 +39,24 @@ public class ShellExecutor {
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
 
-        String result;
-
         try {
             int exitValue = executor.execute(logger, stdout, stderr);
-            if (exitValue == 0) {
-               result = parseOutput(stdout);
-            } else {
-                result = stdout + " " + stderr;
+            if (exitValue != 0) {
+                logger.debug("Command finished with error exit code {}, error output `{}`", exitValue, parseOutput(stderr));
             }
         } catch (ProcessExecutionException e) {
-            result = stdout + " " + stderr;
+            logger.debug("Command threw unexpectedly, error output: `{}`", parseOutput(stderr));
         }
 
-        logger.debug("Command result: {} {}", profiledShellCommand, result);
-        return result.trim();
+        String output = parseOutput(stdout);
+        logger.debug("Command output: `{}`", output);
+        return output;
     }
 
     private List<String> getShellCommand(List<String> command) {
         List<String> profiledShellCommand =  new ArrayList<>();
         profiledShellCommand.add(getCurrentShell());
-        profiledShellCommand.add("-l");
+        profiledShellCommand.add("--login");
         profiledShellCommand.add("-c");
         profiledShellCommand.add(String.join(" ", command));
 

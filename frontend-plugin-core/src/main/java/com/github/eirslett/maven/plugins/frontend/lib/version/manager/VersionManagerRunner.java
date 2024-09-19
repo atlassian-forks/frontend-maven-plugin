@@ -20,8 +20,8 @@ public class VersionManagerRunner {
         this.installConfig = installConfig;
         this.versionManagerCache = versionManagerCache;
 
-        VersionManagerFactory versionManagerFactory = new VersionManagerFactory(installConfig, versionManagerCache);
-        this.versionManagerClient = versionManagerFactory.getClient();
+        VersionManagerFactory versionManagerFactory = new VersionManagerFactory(installConfig);
+        this.versionManagerClient = versionManagerFactory.getClient(versionManagerCache.getVersionManagerType());
     }
 
     /**

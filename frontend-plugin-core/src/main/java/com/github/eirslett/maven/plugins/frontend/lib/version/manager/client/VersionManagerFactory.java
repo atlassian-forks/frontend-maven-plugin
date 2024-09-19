@@ -9,15 +9,11 @@ public class VersionManagerFactory {
 
     final ShellExecutor shellExecutor;
 
-    final VersionManagerCache versionManagerCache;
-
-    public VersionManagerFactory(InstallConfig installConfig, VersionManagerCache versionManagerCache) {
+    public VersionManagerFactory(InstallConfig installConfig) {
         this.shellExecutor = new ShellExecutor(installConfig);
-        this.versionManagerCache = versionManagerCache;
     }
 
-    public VersionManagerClient getClient() {
-        VersionManagerType type = versionManagerCache.getVersionManagerType();
+    public VersionManagerClient getClient(VersionManagerType type) {
         if (type == VersionManagerType.FNM) {
             return new FnmClient(shellExecutor);
         } else if (type == VersionManagerType.NVM) {
