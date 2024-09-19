@@ -40,7 +40,6 @@ public class ShellExecutor {
 
         try {
             int exitValue = executor.execute(logger, stdout, stderr);
-            logger.debug("Command output: `{}`", parseOutput(stdout));
             if (exitValue != 0) {
                 logger.debug("Command finished with error exit code {}, error output `{}`", exitValue, parseOutput(stderr));
             }
@@ -48,6 +47,7 @@ public class ShellExecutor {
             logger.debug("Command threw unexpectedly, error output: `{}`", parseOutput(stderr));
         }
 
+        logger.debug("Command output: `{}`", parseOutput(stdout));
         return parseOutput(stdout);
     }
 
