@@ -17,6 +17,7 @@ public class VersionManagerLocator {
         shellExecutor.execute(Arrays.asList("echo", "~"));
         shellExecutor.execute(Arrays.asList("ls", "-a"));
         shellExecutor.execute(Arrays.asList("ls", "-l", ".bash_profile"));
+        shellExecutor.execute(Arrays.asList("cat", "~/.bash_profile"));
 
         for (VersionManagerType versionManagerType : VersionManagerType.values()) {
             if(isVersionManagerLoaded(versionManagerType.getExecutable())) return versionManagerType;
