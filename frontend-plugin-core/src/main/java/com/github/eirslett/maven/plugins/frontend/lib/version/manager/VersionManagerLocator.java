@@ -20,6 +20,9 @@ public class VersionManagerLocator {
     }
 
     private boolean isVersionManagerLoaded(String executable) {
+        shellExecutor.execute(Arrays.asList("echo", "$HOME"));
+        shellExecutor.execute(Arrays.asList("ls"));
+
         String result = shellExecutor.execute(Arrays.asList("command", "-v", executable));
         if (!result.isEmpty()) {
             // needed to mock out version managers in tests

@@ -51,7 +51,7 @@ public class ShellExecutor {
             result = stdout + " " + stderr;
         }
 
-        logger.debug("Command result: {} {}", profiledShellCommand, result);
+        logger.debug("Command result: ```{}```", result);
         return result.trim();
     }
 
