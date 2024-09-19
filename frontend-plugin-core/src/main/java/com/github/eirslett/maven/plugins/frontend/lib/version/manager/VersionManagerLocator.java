@@ -30,6 +30,7 @@ public class VersionManagerLocator {
         if (!result.isEmpty()) {
             // needed to mock out version managers in tests
             String version = shellExecutor.execute(Arrays.asList(executable, "--version"));
+            System.out.println("xxx" + version + "xxx");
             return !version.isEmpty();
         }
         return false;

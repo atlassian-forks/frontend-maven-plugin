@@ -46,7 +46,6 @@ public class ShellExecutor {
             }
         } catch (ProcessExecutionException e) {
             logger.debug("Command threw unexpectedly, error output: `{}`", parseOutput(stderr));
-            logger.error("Process error: {}", e);
         }
 
         return parseOutput(stdout);
