@@ -2,7 +2,6 @@ package com.github.eirslett.maven.plugins.frontend.lib.version.manager.client;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.ShellExecutor;
-import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerType;
 
 public class VersionManagerFactory {
