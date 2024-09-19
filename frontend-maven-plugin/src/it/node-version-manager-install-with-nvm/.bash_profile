@@ -1,5 +1,3 @@
-echo "bash profile loading..."
-
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm into the shell
 
@@ -7,5 +5,3 @@ export NVM_DIR="$HOME/.nvm"
 fnm() {
     exit 1;
 }
-
-echo "bash profile loaded"

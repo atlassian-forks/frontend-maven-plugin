@@ -38,21 +38,18 @@ public class ShellExecutor {
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
 
-        String result;
-
         try {
             int exitValue = executor.execute(logger, stdout, stderr);
             if (exitValue == 0) {
-               result = parseOutput(stdout);
+                logger.debug("Command result: ```{}```", parseOutput(stdout));
             } else {
-                result = stdout + " " + stderr;
+                logger.debug("Command error: ```{}```", parseOutput(stderr));
             }
         } catch (ProcessExecutionException e) {
-            result = stdout + " " + stderr;
+            logger.debug("Command error: ```{}```", parseOutput(stderr));
         }
 
-        logger.debug("Command result: ```{}```", result);
-        return result.trim();
+        return parseOutput(stdout);
     }
 
     private List<String> getShellCommand(List<String> command) {
