@@ -59,6 +59,8 @@ public class ShellExecutor {
         List<String> profiledShellCommand =  new ArrayList<>();
         profiledShellCommand.add(getCurrentShell());
         profiledShellCommand.add("--login");
+        profiledShellCommand.add("--rcfile");
+        profiledShellCommand.add("~/.bash_profile");
         profiledShellCommand.add("-c");
         profiledShellCommand.add(String.join(" ", command));
 

@@ -13,6 +13,11 @@ public class VersionManagerLocator {
     }
 
     public VersionManagerType findAvailable() {
+        shellExecutor.execute(Arrays.asList("echo", "$HOME"));
+        shellExecutor.execute(Arrays.asList("echo", "~"));
+        shellExecutor.execute(Arrays.asList("ls", "-a"));
+        shellExecutor.execute(Arrays.asList("ls", "-l", ".bash_profile"));
+
         for (VersionManagerType versionManagerType : VersionManagerType.values()) {
             if(isVersionManagerLoaded(versionManagerType.getExecutable())) return versionManagerType;
         }
@@ -20,11 +25,6 @@ public class VersionManagerLocator {
     }
 
     private boolean isVersionManagerLoaded(String executable) {
-        shellExecutor.execute(Arrays.asList("echo", "$HOME"));
-        shellExecutor.execute(Arrays.asList("echo", "~"));
-        shellExecutor.execute(Arrays.asList("ls", "-a"));
-        shellExecutor.execute(Arrays.asList("ls", "-l", ".bash_profile"));
-
         String result = shellExecutor.execute(Arrays.asList("command", "-v", executable));
         if (!result.isEmpty()) {
             // needed to mock out version managers in tests
