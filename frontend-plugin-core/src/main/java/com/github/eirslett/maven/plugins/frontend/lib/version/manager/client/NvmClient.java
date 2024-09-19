@@ -18,6 +18,15 @@ public class NvmClient implements VersionManagerClient {
     }
 
     @Override
+    public boolean isInstalled() {
+        String version = shellExecutor.execute(Arrays.asList(
+            EXECUTABLE, "--version"
+        ));
+
+        return version.matches("\\d+\\.\\d+\\.\\d+");
+    }
+
+    @Override
     public void installNode(String nodeVersion) {
         logger.debug("Installing node {}", nodeVersion);
 

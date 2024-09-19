@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,8 +48,9 @@ public class ShellExecutor {
             logger.debug("Command threw unexpectedly, error output: `{}`", parseOutput(stderr));
         }
 
-        logger.debug("Command output: `{}`", parseOutput(stdout));
-        return parseOutput(stdout);
+        String output = parseOutput(stdout);
+        logger.debug("Command output: `{}`", output);
+        return output;
     }
 
     private List<String> getShellCommand(List<String> command) {
