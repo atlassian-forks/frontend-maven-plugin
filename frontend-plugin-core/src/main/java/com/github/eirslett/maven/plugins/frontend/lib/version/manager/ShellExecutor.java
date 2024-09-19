@@ -40,9 +40,8 @@ public class ShellExecutor {
 
         try {
             int exitValue = executor.execute(logger, stdout, stderr);
-            if (exitValue == 0) {
-                logger.debug("Command result: ```{}```", parseOutput(stdout));
-            } else {
+            logger.debug("Command result: ```{}```", parseOutput(stdout));
+            if (exitValue != 0) {
                 logger.debug("Command error: ```{}```", parseOutput(stderr));
             }
         } catch (ProcessExecutionException e) {
