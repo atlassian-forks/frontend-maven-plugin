@@ -1,9 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.lib;
 
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
-import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerClient;
 
-// TODO add builder pattern
 public class GlobalCache {
 
     private static InstallConfig installConfig;

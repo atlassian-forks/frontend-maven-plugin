@@ -6,6 +6,7 @@ import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionMan
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerLocator;
 
 import java.io.File;
+import java.util.Arrays;
 
 public final class FrontendPluginFactory {
 
@@ -39,14 +40,23 @@ public final class FrontendPluginFactory {
         GlobalCache.setInstallConfig(installConfig);
 
         if (installConfig.isUseNodeVersionManager()) {
-            VersionManagerLocator versionManagerLocator = new VersionManagerLocator(installConfig);
-            VersionManagerType versionManagerType = versionManagerLocator.findAvailable();
+            VersionManagerType versionManagerType = getVersionManagerType(installConfig);
             GlobalCache.setVersionManagerCache(
                 new VersionManagerCache(versionManagerType)
             );
         } else {
             GlobalCache.setVersionManagerCache(new VersionManagerCache());
         }
+    }
+
+    private static VersionManagerType getVersionManagerType(InstallConfig installConfig) {
+        VersionManagerLocator versionManagerLocator = new VersionManagerLocator(installConfig);
+        VersionManagerType versionManagerType = versionManagerLocator.findAvailable();
+        if (versionManagerType == null) {
+            throw new RuntimeException("You have configured `useNodeVersionManager=true` but node version manager couldn't be identified. " +
+                "Please install one of supported version managers " + Arrays.toString(VersionManagerType.values()) + " in your environment");
+        }
+        return versionManagerType;
     }
 
     public BunInstaller getBunInstaller(ProxyConfig proxy) {
