@@ -59,7 +59,10 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
     private RepositorySystemSession repositorySystemSession;
 
-    @Parameter(property = "useNodeVersionManager", defaultValue = "false")
+    /**
+     * Enables node installation using node version manager
+     */
+    @Parameter(property = "useNodeVersionManager", defaultValue = "true")
     private boolean useNodeVersionManager;
 
     /**
