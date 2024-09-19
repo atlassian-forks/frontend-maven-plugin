@@ -58,7 +58,7 @@ public class ShellExecutor {
     private List<String> getShellCommand(List<String> command) {
         List<String> profiledShellCommand =  new ArrayList<>();
         profiledShellCommand.add(getCurrentShell());
-        profiledShellCommand.add("-l");
+        profiledShellCommand.add("--login");
         profiledShellCommand.add("-c");
         profiledShellCommand.add(String.join(" ", command));
 

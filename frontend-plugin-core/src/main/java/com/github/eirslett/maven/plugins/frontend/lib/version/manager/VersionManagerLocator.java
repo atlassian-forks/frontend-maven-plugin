@@ -21,7 +21,9 @@ public class VersionManagerLocator {
 
     private boolean isVersionManagerLoaded(String executable) {
         shellExecutor.execute(Arrays.asList("echo", "$HOME"));
-        shellExecutor.execute(Arrays.asList("ls"));
+        shellExecutor.execute(Arrays.asList("echo", "~"));
+        shellExecutor.execute(Arrays.asList("ls", "-a"));
+        shellExecutor.execute(Arrays.asList("ls", "-l", ".bash_profile"));
 
         String result = shellExecutor.execute(Arrays.asList("command", "-v", executable));
         if (!result.isEmpty()) {
