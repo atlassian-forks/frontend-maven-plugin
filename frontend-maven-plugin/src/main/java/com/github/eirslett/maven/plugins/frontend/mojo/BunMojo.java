@@ -51,7 +51,7 @@ public final class BunMojo extends AbstractFrontendMojo {
     private boolean skip;
 
     /**
-     * Node Version Manager use is disabled for Bun execution
+     * Node Version Manager usage disabled for Bun execution
      */
     @Parameter(property = "useNodeVersionManager", readonly = true, defaultValue = "false")
     private boolean useNodeVersionManager;
