@@ -40,12 +40,13 @@ public class ShellExecutor {
 
         try {
             int exitValue = executor.execute(logger, stdout, stderr);
-            logger.debug("Command output: ```{}```", parseOutput(stdout));
+            logger.debug("Command output: `{}`", parseOutput(stdout));
             if (exitValue != 0) {
-                logger.debug("Command finished with error exit code {}, error output ```{}```", exitValue, parseOutput(stderr));
+                logger.debug("Command finished with error exit code {}, error output `{}`", exitValue, parseOutput(stderr));
             }
         } catch (ProcessExecutionException e) {
-            logger.debug("Command threw unexpectedly, error output: ```{}```", parseOutput(stderr));
+            logger.debug("Command threw unexpectedly, error output: `{}`", parseOutput(stderr));
+            logger.error("Process error: {}", e);
         }
 
         return parseOutput(stdout);
