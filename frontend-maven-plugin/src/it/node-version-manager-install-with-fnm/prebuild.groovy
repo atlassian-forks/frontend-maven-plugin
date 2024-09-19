@@ -1,3 +1,3 @@
-def p = "sh $basedir/install-fnm.sh".execute()
+def p = "bash $basedir/install-fnm.sh".execute()
 p.waitFor()
 println p.text
