@@ -6,6 +6,12 @@
     <version>1.15.0-atlassian-testrelease-1</version>
     <packaging>pom</packaging>
 
+    <parent>
+        <artifactId>central-pom</artifactId>
+        <groupId>com.atlassian.pom</groupId>
+        <version>6.3.8</version>
+    </parent>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.skip>true</gpg.skip>
@@ -116,18 +122,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <distributionManagement>
-        <repository>
-            <id>maven-atlassian-com</id>
-            <name>Atlassian Central Repository</name>
-            <url>https://packages.atlassian.com/maven/central</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven-atlassian-com</id>
-            <name>Atlassian Central Snapshot Repository</name>
-            <url>https://packages.atlassian.com/maven/central-snapshot</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 </project>
