@@ -2,12 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.github.eirslett</groupId>
-        <artifactId>parent</artifactId>
-        <version>0</version>
-    </parent>
-    <artifactId>with-npm</artifactId>
+    <groupId>com.github.eirslett</groupId>
+    <artifactId>example</artifactId>
     <version>0</version>
     <packaging>pom</packaging>
 
@@ -16,11 +12,12 @@
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
+                <!-- NB! Set <version> to the latest released version of frontend-maven-plugin, like in README.md -->
+                <version>@project.version@</version>
 
                 <configuration>
                     <nodeVersion>20.15.1</nodeVersion>
                     <workingDirectory>${basedir}</workingDirectory>
-                    <useNodeVersionManager>true</useNodeVersionManager>
                 </configuration>
 
                 <executions>
