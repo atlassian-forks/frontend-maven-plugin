@@ -3,7 +3,7 @@
 
     <groupId>com.atlassian.frontend-maven-plugin-fork</groupId>
     <artifactId>frontend-plugins</artifactId>
-    <version>1.15.0-atlassian-testrelease-1</version>
+    <version>1.15.0-atlassian-1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
