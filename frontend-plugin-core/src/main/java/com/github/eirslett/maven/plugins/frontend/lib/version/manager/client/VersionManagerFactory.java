@@ -19,6 +19,8 @@ public class VersionManagerFactory {
             return new NvmClient(shellExecutor);
         } else if (type == VersionManagerType.NVS) {
             return new NvsClient(shellExecutor);
+        } else if (type == VersionManagerType.MISE) {
+            return new MiseClient(shellExecutor);
         }
 
         throw new RuntimeException(String.format("Version manager (%s) type is not implemented", type));
