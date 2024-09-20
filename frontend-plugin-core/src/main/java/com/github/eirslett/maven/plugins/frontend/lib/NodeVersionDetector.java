@@ -88,9 +88,7 @@ public class NodeVersionDetector {
     }
 
     private static String readNvmrcFile(File nvmrcFile, Path nvmrcFilePath, Logger logger) throws Exception {
-        if (!nvmrcFile.canRead()) {
-            throw new Exception("Tried to read the node version from the file, but giving up because it's possible to read" + nvmrcFile.getPath());
-        }
+        assertNodeVersionFileIsReadable(nvmrcFile);
 
         List<String> lines = Files.readAllLines(nvmrcFilePath);
         Optional<String> version = readNvmrcFileLines(lines);
@@ -134,9 +132,7 @@ public class NodeVersionDetector {
     }
 
     private static String readToolVersionsFile(File toolVersionsFile, Path toolVersionsFilePath, Logger logger) throws Exception {
-        if (!toolVersionsFile.canRead()) {
-            throw new Exception("Tried to read the node version from the file, but giving up because it's possible to read" + toolVersionsFile.getPath());
-        }
+        assertNodeVersionFileIsReadable(toolVersionsFile);
 
         List<String> lines = Files.readAllLines(toolVersionsFilePath);
         for (String line: lines) {
@@ -156,5 +152,11 @@ public class NodeVersionDetector {
             }
         }
         return null;
+    }
+
+    private static void assertNodeVersionFileIsReadable(File file) throws Exception {
+        if (!file.canRead()) {
+            throw new Exception("Tried to read the node version from the file, but giving up because it's not possible to read" + file.getPath());
+        }
     }
 }
