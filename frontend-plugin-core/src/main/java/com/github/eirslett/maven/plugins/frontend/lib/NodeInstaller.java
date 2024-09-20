@@ -85,17 +85,16 @@ public class NodeInstaller {
             if (this.nodeDownloadRoot == null || this.nodeDownloadRoot.isEmpty()) {
                 this.nodeDownloadRoot = this.installConfig.getPlatform().getNodeDownloadRoot();
             }
+            verifyNodeVersion();
 
+            // try to install with node version manager
             if (this.versionManagerCache.isVersionManagerAvailable()) {
-                if (this.nodeVersion != null) {
-                    logger.warn("`nodeVersion` has been provided in configuration but will be ignored. Version Manager will load the version from their configuration file (e.g. .nvmrc, .tool-versions)");
-                }
-
                 VersionManagerRunner versionManagerRunner = new VersionManagerRunner(installConfig, versionManagerCache);
                 versionManagerRunner.installNodeAndUpdateCaches();
                 return;
             }
 
+            // try to install the standard way
             if (!nodeIsAlreadyInstalled()) {
                 this.logger.info("Installing node version {}", this.nodeVersion);
 
@@ -111,6 +110,19 @@ public class NodeInstaller {
                 } else {
                     installNodeDefault();
                 }
+            }
+        }
+    }
+
+    private void verifyNodeVersion() throws InstallationException {
+        if (this.versionManagerCache.isVersionManagerAvailable()) {
+            if (this.nodeVersion != null) {
+                logger.warn("`nodeVersion` has been configured to {} but will be ignored." +
+                    " Version Manager will load the version from their version file (e.g. .nvmrc, .tool-versions)", this.nodeVersion);
+            }
+        } else {
+            if (this.nodeVersion == null) {
+                throw new InstallationException("`nodeVersion` needs to be provided when running node installation without node version manager.");
             }
         }
     }

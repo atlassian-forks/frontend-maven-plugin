@@ -38,8 +38,9 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
 
     /**
      * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
+     * If using with node version manager (enabled by default), nodeVersion parameter will be ignored
      */
-    @Parameter(property="nodeVersion", required = true)
+    @Parameter(property="nodeVersion", required = false)
     private String nodeVersion;
 
     /**
