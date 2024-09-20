@@ -29,15 +29,9 @@ public class MiseClient implements VersionManagerClient {
     }
 
     @Override
-    public void installNode(String nodeVersion) {
-        logger.debug("Installing node {}", nodeVersion);
-
-        String nodeAsMisePlugin = String.format("node@%s", nodeVersion);
+    public void installNode() {
         shellExecutor.execute(Arrays.asList(
-            EXECUTABLE, "install", nodeAsMisePlugin
-        ));
-        shellExecutor.execute(Arrays.asList(
-            EXECUTABLE, "use", nodeAsMisePlugin
+            EXECUTABLE, "install", "node"
         ));
     }
 

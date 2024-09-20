@@ -6,7 +6,7 @@ public interface VersionManagerClient {
 
     boolean isInstalled();
 
-    void installNode(String nodeVersion);
+    void installNode();
 
     File getNodeExecutable();
 

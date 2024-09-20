@@ -28,14 +28,13 @@ public class AsdfClient implements VersionManagerClient {
     }
 
     @Override
-    public void installNode(String nodeVersion) {
-        logger.debug("Installing node {}", nodeVersion);
+    public void installNode() {
 
         shellExecutor.execute(Arrays.asList(
             EXECUTABLE, "plugin", "add", "nodejs"
         ));
         shellExecutor.execute(Arrays.asList(
-            EXECUTABLE, "install", "nodejs", nodeVersion
+            EXECUTABLE, "install", "nodejs"
         ));
     }
 

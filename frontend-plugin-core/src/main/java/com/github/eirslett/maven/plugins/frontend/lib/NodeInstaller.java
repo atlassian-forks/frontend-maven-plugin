@@ -87,8 +87,12 @@ public class NodeInstaller {
             }
 
             if (this.versionManagerCache.isVersionManagerAvailable()) {
+                if (this.nodeVersion != null) {
+                    logger.warn("`nodeVersion` has been provided in configuration but will be ignored. Version Manager will load the version from their configuration file (e.g. .nvmrc, .tool-versions)");
+                }
+
                 VersionManagerRunner versionManagerRunner = new VersionManagerRunner(installConfig, versionManagerCache);
-                versionManagerRunner.installNodeAndUpdateCaches(this.nodeVersion);
+                versionManagerRunner.installNodeAndUpdateCaches();
                 return;
             }
 

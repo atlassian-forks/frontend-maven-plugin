@@ -16,7 +16,6 @@
                 <version>@project.version@</version>
 
                 <configuration>
-                    <nodeVersion>20.15.1</nodeVersion>
                     <yarnVersion>v1.22.22</yarnVersion>
                     <workingDirectory>${basedir}</workingDirectory>
                 </configuration>

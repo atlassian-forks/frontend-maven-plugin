@@ -29,15 +29,15 @@ public class VersionManagerRunner {
      *
      * @param nodeVersion
      */
-    public void installNodeAndUpdateCaches(String nodeVersion) {
+    public void installNodeAndUpdateCaches() {
         if (!installConfig.isUseNodeVersionManager()) return;
 
         logger.info("Installing node with {}", versionManagerCache.getVersionManagerType());
 
-        versionManagerClient.installNode(nodeVersion);
+        versionManagerClient.installNode();
         populateCache();
 
-        logger.info("Node {} has been installed using {}", nodeVersion, versionManagerCache.getVersionManagerType());
+        logger.info("Node has been installed");
     }
 
     public void populateCache() {

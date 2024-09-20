@@ -27,11 +27,9 @@ public class NvmClient implements VersionManagerClient {
     }
 
     @Override
-    public void installNode(String nodeVersion) {
-        logger.debug("Installing node {}", nodeVersion);
-
+    public void installNode() {
         shellExecutor.execute(Arrays.asList(
-            EXECUTABLE, "install", nodeVersion
+            EXECUTABLE, "install"
         ));
     }
 
