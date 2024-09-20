@@ -4,8 +4,6 @@ public enum VersionManagerType {
     FNM,
     MISE,
     NVS,
+    ASDF,
     NVM
-
-    // TODO add support for other version managers
-    //    ASDF("asdf"),
 }

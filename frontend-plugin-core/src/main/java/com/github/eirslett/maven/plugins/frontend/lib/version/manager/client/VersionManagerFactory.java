@@ -21,6 +21,8 @@ public class VersionManagerFactory {
             return new NvsClient(shellExecutor);
         } else if (type == VersionManagerType.MISE) {
             return new MiseClient(shellExecutor);
+        } else if (type == VersionManagerType.ASDF) {
+            return new AsdfClient(shellExecutor);
         }
 
         throw new RuntimeException(String.format("Version manager (%s) type is not implemented", type));
