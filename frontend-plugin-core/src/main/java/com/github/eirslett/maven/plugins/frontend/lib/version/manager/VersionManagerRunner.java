@@ -26,8 +26,6 @@ public class VersionManagerRunner {
 
     /**
      * This method updates global configs as a side effect
-     *
-     * @param nodeVersion
      */
     public void installNodeAndUpdateCaches() {
         if (!installConfig.isUseNodeVersionManager()) return;
