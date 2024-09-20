@@ -18,7 +18,6 @@
                 <configuration>
                     <nodeVersion>20.15.1</nodeVersion>
                     <workingDirectory>${basedir}</workingDirectory>
-                    <useNodeVersionManager>true</useNodeVersionManager>
                 </configuration>
 
                 <executions>
