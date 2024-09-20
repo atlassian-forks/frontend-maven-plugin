@@ -7,9 +7,11 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -32,7 +34,9 @@ public class NodeVersionDetector {
                 throw new Exception("The Node version file doesn't seem to exist: " + genericNodeVersionFileFile);
             }
 
-            if (genericNodeVersionFile.endsWith(TOOL_VERSIONS_FILENAME)) {
+            if (genericNodeVersionFile.endsWith(".toml") && genericNodeVersionFile.contains("mise")) {
+                return readMiseConfigTomlFile(genericNodeVersionFileFile, genericNodeVersionFileFile.toPath(), logger);
+            } else if (genericNodeVersionFile.endsWith(TOOL_VERSIONS_FILENAME)) {
                 return readToolVersionsFile(genericNodeVersionFileFile, genericNodeVersionFileFile.toPath(), logger);
             } else {
                 return readNvmrcFile(genericNodeVersionFileFile, genericNodeVersionFileFile.toPath(), logger);
@@ -48,6 +52,49 @@ public class NodeVersionDetector {
         }
     }
 
+    /**
+     * Mise has way too many options, see:
+     * <a href="https://mise.jdx.dev/profiles.html">https://mise.jdx.dev/profiles.html</a>
+     * <a href="https://mise.jdx.dev/configuration.html#mise-toml">https://mise.jdx.dev/configuration.html#mise-toml</a>
+     */
+    public static List<String> listMiseConfigFilenames() {
+        final String miseConfigDir = System.getenv("MISE_CONFIG_DIR");
+        final String miseEnv = System.getenv("MISE_ENV");
+
+        // The order is important and should respect mises' ordering
+        final List<String> allMiseConfigFilenames = new ArrayList<>();
+
+        allMiseConfigFilenames.add(format("%s/config.%s.toml", miseConfigDir, miseEnv));
+        allMiseConfigFilenames.add(format("%s/mise.%s.toml", miseConfigDir, miseEnv));
+
+        allMiseConfigFilenames.add(".config/mise/config.toml");
+        allMiseConfigFilenames.add("mise/config.toml");
+        allMiseConfigFilenames.add("mise.toml");
+        allMiseConfigFilenames.add(".mise/config.toml");
+        allMiseConfigFilenames.add(".mise.toml");
+        allMiseConfigFilenames.add(".config/mise/config.local.toml");
+        allMiseConfigFilenames.add("mise/config.local.toml");
+        allMiseConfigFilenames.add("mise.local.toml");
+        allMiseConfigFilenames.add(".mise/config.local.toml");
+        allMiseConfigFilenames.add(".mise.local.toml");
+
+        allMiseConfigFilenames.add(format(".config/mise/config.%s.toml", miseEnv));
+        allMiseConfigFilenames.add(format("mise/config.%s.toml", miseEnv));
+        allMiseConfigFilenames.add(format("mise.%s.toml", miseEnv));
+        allMiseConfigFilenames.add(format(".mise/config.%s.toml", miseEnv));
+        allMiseConfigFilenames.add(format(".mise.%s.toml", miseEnv));
+        allMiseConfigFilenames.add(format(".config/mise/config.%s.local.toml", miseEnv));
+        allMiseConfigFilenames.add(format("mise/config.%s.local.toml", miseEnv));
+        allMiseConfigFilenames.add(format(".mise/config.%s.local.toml", miseEnv));
+        allMiseConfigFilenames.add(format(".mise.%s.local.toml", miseEnv));
+
+        return allMiseConfigFilenames;
+    }
+
+    /**
+     * Ordering this hierarchy of reading the files isn't just the most idiomatic, it's also probably the best
+     * for performance.
+     */
     public static String recursivelyFindVersion(File directory) throws Exception {
         Logger logger = getLogger(NodeVersionDetector.class);
 
@@ -77,6 +124,20 @@ public class NodeVersionDetector {
         if (toolVersionsFile.exists()) {
             String trimmedLine = readToolVersionsFile(toolVersionsFile, toolVersionsFilePath, logger);
             if (trimmedLine != null) return trimmedLine;
+        }
+
+        for (String miseConfigFilename: listMiseConfigFilenames()) {
+            // We don't know if MISE_CONFIG_DIR can result in absolute or relative file paths, try to do our best
+            String[] splitMiseConfigFilename = miseConfigFilename.split("/");
+            Path potentiallyAbsoluteFilepath = Paths.get("", splitMiseConfigFilename);
+            Path miseConfigFilePath = potentiallyAbsoluteFilepath.isAbsolute() ?
+                    potentiallyAbsoluteFilepath : Paths.get(directoryPath, splitMiseConfigFilename);
+
+            File miseConfigFile = miseConfigFilePath.toFile();
+            if (miseConfigFile.exists()) {
+                String trimmedVersion = readMiseConfigTomlFile(miseConfigFile, miseConfigFilePath, logger);
+                if (trimmedVersion != null) return trimmedVersion;
+            }
         }
 
         File parent = directory.getParentFile();
@@ -129,6 +190,43 @@ public class NodeVersionDetector {
             }
         }
         return empty();
+    }
+
+    /**
+     * If this gets any more complicated we'll add a reader, not sure how strict mise is with the spec, we want to be
+     * at least as loose.
+     */
+    @VisibleForTesting
+    static String readMiseConfigTomlFile(File miseTomlFile, Path miseTomlFilePath, Logger logger) throws Exception {
+        assertNodeVersionFileIsReadable(miseTomlFile);
+
+        List<String> lines = Files.readAllLines(miseTomlFilePath);
+        for (String line: lines) {
+            if (!isNull(line)) {
+                String trimmedLine = line.trim();
+
+                if (trimmedLine.isEmpty()) {
+                    continue;
+                }
+
+                if (!trimmedLine.startsWith("node")) { // naturally skips over comments
+                    continue;
+                }
+
+                logger.info("Found the version of Node in: " + miseTomlFilePath);
+
+                if (trimmedLine.contains("[")) {
+                    throw new Exception("mise file support is limited to a single version");
+                }
+
+                return trimmedLine
+                        .replaceAll("node(js)?\\s*=\\s*", "")
+                        .replaceAll("\"", "") // destringify the version -- there's no " in Node versions
+                        .replaceAll("#.*$", "") // remove comments -- there's no '#' in Node versions
+                        .trim();
+            }
+        }
+        return null;
     }
 
     private static String readToolVersionsFile(File toolVersionsFile, Path toolVersionsFilePath, Logger logger) throws Exception {
