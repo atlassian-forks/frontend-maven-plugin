@@ -119,12 +119,14 @@
 
     <distributionManagement>
         <repository>
-            <id>atlassian-3rdparty</id>
-            <url>https://maven.atlassian.com/3rdparty</url>
+            <id>maven-atlassian-com</id>
+            <name>Atlassian Central Repository</name>
+            <url>https://packages.atlassian.com/maven/central</url>
         </repository>
         <snapshotRepository>
-            <id>atlassian-3rdparty-snapshot</id>
-            <url>https://maven.atlassian.com/3rdparty-snapshot</url>
+            <id>maven-atlassian-com</id>
+            <name>Atlassian Central Snapshot Repository</name>
+            <url>https://packages.atlassian.com/maven/central-snapshot</url>
         </snapshotRepository>
     </distributionManagement>
 
