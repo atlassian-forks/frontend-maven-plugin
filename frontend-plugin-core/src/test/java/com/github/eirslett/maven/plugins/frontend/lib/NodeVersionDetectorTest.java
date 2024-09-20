@@ -5,7 +5,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;

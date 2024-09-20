@@ -2,12 +2,12 @@ package com.github.eirslett.maven.plugins.frontend.lib;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
 
 public class NodeVersionParser {
 
@@ -18,8 +18,7 @@ public class NodeVersionParser {
     static final Pattern VALID_VERSION_PATTERN = Pattern.compile("^v?\\d*\\.\\d*\\.\\d*$");
 
     static {
-        UNUSUAL_VALID_VERSIONS = new HashSet<>();
-        UNUSUAL_VALID_VERSIONS.addAll(asList(
+        UNUSUAL_VALID_VERSIONS = Stream.of(
                 "latest",
                 "latest-argon",
                 "latest-boron",
@@ -169,7 +168,7 @@ public class NodeVersionParser {
                 "node-v0.6.7",
                 "node-v0.6.8",
                 "node-v0.6.9"
-        ));
+        ).collect(toSet());
     }
 
     public static boolean validateVersion(String version) {
@@ -182,7 +181,7 @@ public class NodeVersionParser {
     }
 
     public static String fixupMinorVersionErrors(String version) {
-        version = version.toLowerCase();
+        version = version.toLowerCase(); // all the versions seem to be lower case
 
         if (UNUSUAL_VALID_VERSIONS.contains(version)) {
             return version;
