@@ -30,6 +30,16 @@ public class NodeVersionParser {
                 "latest-gallium",
                 "latest-hydrogen",
                 "latest-iron",
+
+                // future releases
+                "latest-jod",
+                "latest-krypton",
+                "latest-lithium",
+                "latest-magnesium",
+                "latest-neon",
+                "latest-oxygen",
+                "latest-platinum",
+
                 "latest-v0.10.x",
                 "latest-v0.12.x",
                 "latest-v10.x",
