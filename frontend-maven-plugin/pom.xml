@@ -128,7 +128,10 @@
               <filterProperties>
                 <repository.proxy.url>${repository.proxy.url}</repository.proxy.url>
               </filterProperties>
-              <pomIncludes>**/pom.xml</pomIncludes>
+              <pomIncludes>
+                <pomInclude>**/pom.xml</pomInclude>
+                <pomInclude>!**/sub-*/pom.xml</pomInclude>
+              </pomIncludes>
             </configuration>
 
             <executions>
