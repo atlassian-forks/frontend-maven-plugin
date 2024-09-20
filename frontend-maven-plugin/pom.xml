@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>frontend-plugins</artifactId>
-    <groupId>com.github.eirslett</groupId>
+    <groupId>com.atlassian.frontend-maven-plugin-fork</groupId>
     <version>1.15.0-atlassian-testrelease-1</version>
   </parent>
 
@@ -24,7 +24,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.github.eirslett</groupId>
+      <groupId>com.atlassian.frontend-maven-plugin-fork</groupId>
       <artifactId>frontend-plugin-core</artifactId>
       <version>${project.parent.version}</version>
     </dependency>

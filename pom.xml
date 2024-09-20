@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.eirslett</groupId>
+    <groupId>com.atlassian.frontend-maven-plugin-fork</groupId>
     <artifactId>frontend-plugins</artifactId>
     <version>1.15.0-atlassian-testrelease-1</version>
     <packaging>pom</packaging>
@@ -68,14 +68,6 @@
                     <releaseProfiles>release</releaseProfiles>
                     <branchName>master</branchName>
                     <goals>deploy</goals>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>

@@ -11,7 +11,7 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>com.github.eirslett</groupId>
+        <groupId>com.atlassian.frontend-maven-plugin-fork</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
         <!-- NB! Set <version> to the latest released version of frontend-maven-plugin, like in README.md -->
         <version>@project.version@</version>
