@@ -6,16 +6,10 @@ import com.github.eirslett.maven.plugins.frontend.lib.ProcessExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ShellExecutor {
 
@@ -26,21 +20,13 @@ public class ShellExecutor {
         this.config = config;
     }
 
-    public String execute(List<String> command) {
-        List<String> profiledShellCommand = getShellCommand(command);
-
-        ProcessExecutor executor = new ProcessExecutor(
-            config.getWorkingDirectory(),
-            Collections.emptyList(),
-            profiledShellCommand,
-            config.getPlatform(),
-            Collections.emptyMap());
-
+    public String executeAndCatchErrors(List<String> command) {
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+        List<String> profiledShellCommand = getShellCommand(command);
 
         try {
-            int exitValue = executor.execute(logger, stdout, stderr);
+            int exitValue = execute(profiledShellCommand, stdout, stderr);
             if (exitValue != 0) {
                 logger.debug("Command finished with error exit code {}, error output `{}`", exitValue, parseOutput(stderr));
             }
@@ -51,6 +37,44 @@ public class ShellExecutor {
         String output = parseOutput(stdout);
         logger.debug("Command output: `{}`", output);
         return output;
+    }
+
+    public String executeOrFail(List<String> command) {
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+        ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+        List<String> profiledShellCommand = getShellCommand(command);
+
+        boolean hasExecutionFailed = false;
+        try {
+            int exitValue = execute(profiledShellCommand, stdout, stderr);
+            if (exitValue != 0) {
+                hasExecutionFailed = true;
+            }
+        } catch (ProcessExecutionException e) {
+            hasExecutionFailed = true;
+        }
+
+        if (hasExecutionFailed) {
+            String commandText = String.join(" ", profiledShellCommand);
+            throw new RuntimeException(String.format("Execution of `%s` has failed" +
+                "\nstdout: `%s`" +
+                "\nstderr: `%s`", commandText, parseOutput(stdout), parseOutput(stderr)));
+        } else {
+            String output = parseOutput(stdout);
+            logger.debug("Command output: `{}`", output);
+            return output;
+        }
+    }
+
+    private int execute(List<String> command, ByteArrayOutputStream stdout, ByteArrayOutputStream stderr) throws ProcessExecutionException {
+        ProcessExecutor executor = new ProcessExecutor(
+            config.getWorkingDirectory(),
+            Collections.emptyList(),
+            command,
+            config.getPlatform(),
+            Collections.emptyMap());
+
+        return executor.execute(logger, stdout, stderr);
     }
 
     private List<String> getShellCommand(List<String> command) {

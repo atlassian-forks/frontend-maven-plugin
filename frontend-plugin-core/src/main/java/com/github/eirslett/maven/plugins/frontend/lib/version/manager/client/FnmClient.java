@@ -21,7 +21,7 @@ public class FnmClient implements VersionManagerClient {
 
     @Override
     public boolean isInstalled() {
-        String version = cleanOutput(shellExecutor.execute(Arrays.asList(
+        String version = cleanOutput(shellExecutor.executeAndCatchErrors(Arrays.asList(
             EXECUTABLE, "--version"
         )));
 
@@ -30,15 +30,15 @@ public class FnmClient implements VersionManagerClient {
 
     @Override
     public void installNode() {
-        shellExecutor.execute(Arrays.asList(
+        shellExecutor.executeOrFail(Arrays.asList(
             EXECUTABLE, "install"
         ));
     }
 
     @Override
     public File getNodeExecutable() {
-        String currentNodeVersion = cleanOutput(shellExecutor.execute(Arrays.asList(EXECUTABLE, "current")));
-        String fnmDir = cleanOutput(shellExecutor.execute(Arrays.asList("echo", "$FNM_DIR")));
+        String currentNodeVersion = cleanOutput(shellExecutor.executeOrFail(Arrays.asList(EXECUTABLE, "current")));
+        String fnmDir = cleanOutput(shellExecutor.executeOrFail(Arrays.asList("echo", "$FNM_DIR")));
 
         return Paths.get(fnmDir, "node-versions", currentNodeVersion, "installation", "bin", "node").toFile();
     }

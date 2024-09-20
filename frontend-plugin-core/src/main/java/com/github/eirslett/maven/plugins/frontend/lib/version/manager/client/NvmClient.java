@@ -19,7 +19,7 @@ public class NvmClient implements VersionManagerClient {
 
     @Override
     public boolean isInstalled() {
-        String version = shellExecutor.execute(Arrays.asList(
+        String version = shellExecutor.executeAndCatchErrors(Arrays.asList(
             EXECUTABLE, "--version"
         ));
 
@@ -28,14 +28,14 @@ public class NvmClient implements VersionManagerClient {
 
     @Override
     public void installNode() {
-        shellExecutor.execute(Arrays.asList(
+        shellExecutor.executeOrFail(Arrays.asList(
             EXECUTABLE, "install"
         ));
     }
 
     @Override
     public File getNodeExecutable() {
-        return new File(shellExecutor.execute(Arrays.asList(
+        return new File(shellExecutor.executeOrFail(Arrays.asList(
             EXECUTABLE, "which", "node"
         )));
     }

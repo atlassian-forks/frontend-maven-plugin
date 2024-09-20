@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class MiseClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
@@ -21,7 +20,7 @@ public class MiseClient implements VersionManagerClient {
 
     @Override
     public boolean isInstalled() {
-        String version = shellExecutor.execute(Arrays.asList(
+        String version = shellExecutor.executeAndCatchErrors(Arrays.asList(
             EXECUTABLE, "--version"
         ));
 
@@ -30,14 +29,14 @@ public class MiseClient implements VersionManagerClient {
 
     @Override
     public void installNode() {
-        shellExecutor.execute(Arrays.asList(
+        shellExecutor.executeOrFail(Arrays.asList(
             EXECUTABLE, "install", "node"
         ));
     }
 
     @Override
     public File getNodeExecutable() {
-        return new File(shellExecutor.execute(Arrays.asList(
+        return new File(shellExecutor.executeOrFail(Arrays.asList(
             EXECUTABLE, "which", "node"
         )));
     }
