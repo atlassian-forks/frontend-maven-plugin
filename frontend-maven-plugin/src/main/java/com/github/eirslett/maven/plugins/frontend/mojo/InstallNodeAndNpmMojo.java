@@ -3,7 +3,7 @@ package com.github.eirslett.maven.plugins.frontend.mojo;
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
 import com.github.eirslett.maven.plugins.frontend.lib.NPMInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
-import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionParser;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -14,7 +14,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 
-import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionParser.fixupMinorVersionErrors;
+import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.getDownloadableVersion;
 import static java.util.Objects.isNull;
 
 @Mojo(name="install-node-and-npm", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
@@ -95,11 +95,11 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
             throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
         }
 
-        if (!NodeVersionParser.validateVersion(nodeVersion)) {
+        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
             throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
         }
 
-        String validNodeVersion = fixupMinorVersionErrors(nodeVersion);
+        String validNodeVersion = getDownloadableVersion(nodeVersion);
 
         if (null != server) {
             factory.getNodeInstaller(proxyConfig)
