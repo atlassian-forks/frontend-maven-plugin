@@ -4,11 +4,15 @@ import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionMan
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerRunner;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerType;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
 
 public final class FrontendPluginFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(FrontendPluginFactory.class);
 
     private static final Platform defaultPlatform = Platform.guess();
     private static final String DEFAULT_CACHE_PATH = "cache";
@@ -33,30 +37,6 @@ public final class FrontendPluginFactory {
         this.useNodeVersionManager = useNodeVersionManager;
 
         initializeGlobalCache();
-    }
-
-    private void initializeGlobalCache() {
-        InstallConfig installConfig = new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform, useNodeVersionManager);
-        GlobalCache.setInstallConfig(installConfig);
-
-        if (installConfig.isUseNodeVersionManager()) {
-            VersionManagerType versionManagerType = getVersionManagerType(installConfig);
-            GlobalCache.setVersionManagerCache(
-                new VersionManagerCache(versionManagerType)
-            );
-        } else {
-            GlobalCache.setVersionManagerCache(new VersionManagerCache());
-        }
-    }
-
-    private static VersionManagerType getVersionManagerType(InstallConfig installConfig) {
-        VersionManagerLocator versionManagerLocator = new VersionManagerLocator(installConfig);
-        VersionManagerType versionManagerType = versionManagerLocator.findAvailable();
-        if (versionManagerType == null) {
-            throw new RuntimeException("You have configured `useNodeVersionManager=true` but node version manager couldn't be identified. " +
-                "Please install one of supported version managers " + Arrays.toString(VersionManagerType.values()) + " in your environment");
-        }
-        return versionManagerType;
     }
 
     public BunInstaller getBunInstaller(ProxyConfig proxy) {
@@ -146,9 +126,36 @@ public final class FrontendPluginFactory {
         return new DirectoryCacheResolver(new File(root, DEFAULT_CACHE_PATH));
     }
 
+    private void initializeGlobalCache() {
+        InstallConfig installConfig = new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform, useNodeVersionManager);
+        GlobalCache.setInstallConfig(installConfig);
+
+        if (installConfig.isUseNodeVersionManager()) {
+            VersionManagerType versionManagerType = getVersionManagerType(installConfig);
+            GlobalCache.setVersionManagerCache(
+                new VersionManagerCache(versionManagerType)
+            );
+        } else {
+            GlobalCache.setVersionManagerCache(new VersionManagerCache());
+        }
+    }
+
+    private static VersionManagerType getVersionManagerType(InstallConfig installConfig) {
+        VersionManagerLocator versionManagerLocator = new VersionManagerLocator(installConfig);
+        VersionManagerType versionManagerType = versionManagerLocator.findAvailable();
+        if (versionManagerType == null) {
+            logger.warn("You have configured `useNodeVersionManager=true` but node version manager couldn't be identified. " +
+                "If you want to use node version manager, please install a supported manager " + Arrays.toString(VersionManagerType.values()) + " in your environment.");
+        }
+        return versionManagerType;
+    }
+
     public void loadVersionManager() {
         if (getInstallConfig().isUseNodeVersionManager()) {
-            getVersionManagerRunner().populateCache();
+            VersionManagerType versionManagerType = getVersionManagerType(getInstallConfig());
+            if (versionManagerType != null) {
+                getVersionManagerRunner().populateCache();
+            }
         }
     }
 }
