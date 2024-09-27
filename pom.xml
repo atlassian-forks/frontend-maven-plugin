@@ -9,7 +9,7 @@
 
     <groupId>com.github.eirslett</groupId>
     <artifactId>frontend-plugins</artifactId>
-    <version>1.15.0-atlassian-1-SNAPSHOT</version>
+    <version>1.15.0-atlassian-1-7634b9d1</version>
     <packaging>pom</packaging>
 
     <properties>
