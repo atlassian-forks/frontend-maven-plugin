@@ -16,6 +16,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.skip>true</gpg.skip>
         <java.version>1.8</java.version>
+
+        <!-- Must match the distribution management -->
+        <artifactory.target.repo>maven-3rdparty</artifactory.target.repo>
     </properties>
 
     <name>Frontend Plugins</name>
