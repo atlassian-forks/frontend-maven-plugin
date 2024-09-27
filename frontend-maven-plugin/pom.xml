@@ -26,7 +26,7 @@
     <dependency>
       <groupId>com.github.eirslett</groupId>
       <artifactId>frontend-plugin-core</artifactId>
-      <version>${project.version}</version>
+      <scope>compile</scope>
     </dependency>
 
     <dependency>

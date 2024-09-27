@@ -9,7 +9,7 @@
 
     <groupId>com.github.eirslett</groupId>
     <artifactId>frontend-plugins</artifactId>
-    <version>1.15.0-atlassian-1-0b42a3b</version>
+    <version>1.15.0-atlassian-1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -53,6 +53,21 @@
         <module>frontend-plugin-core</module>
         <module>frontend-maven-plugin</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-plugin-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
