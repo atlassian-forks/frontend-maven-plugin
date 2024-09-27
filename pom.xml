@@ -1,6 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>com.atlassian.pom</groupId>
+        <artifactId>public-pom</artifactId>
+        <version>6.3.8</version>
+    </parent>
+
     <groupId>com.github.eirslett</groupId>
     <artifactId>frontend-plugins</artifactId>
     <version>1.15.0-atlassian-1-0b42a3b</version>
@@ -80,11 +86,11 @@
 
     <distributionManagement>
         <repository>
-            <id>atlassian-3rdparty</id>
+            <id>maven-atlassian-com</id>
             <url>https://packages.atlassian.com/maven/3rdparty</url>
         </repository>
         <snapshotRepository>
-            <id>atlassian-3rdparty-snapshot</id>
+            <id>maven-atlassian-com</id>
             <url>https://packages.atlassian.com/maven/3rdparty-snapshot</url>
         </snapshotRepository>
     </distributionManagement>
