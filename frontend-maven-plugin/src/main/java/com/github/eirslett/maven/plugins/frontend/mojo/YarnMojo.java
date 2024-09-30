@@ -28,6 +28,9 @@ public final class YarnMojo extends AbstractFrontendMojo {
     @Parameter(defaultValue = "", property = "frontend.yarn.arguments", required = false)
     private String arguments;
 
+    @Parameter(defaultValue = "", property = "frontend.yarn.incremental", required = false)
+    private String incremental;
+
     @Parameter(property = "frontend.yarn.yarnInheritsProxyConfigFromMaven", required = false,
         defaultValue = "true")
     private boolean yarnInheritsProxyConfigFromMaven;
@@ -40,6 +43,14 @@ public final class YarnMojo extends AbstractFrontendMojo {
 
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
     private MavenSession session;
+
+    /**
+     * The directory containing front end files that will be processed.
+     * If this is set then files in the directory will be checked for
+     * modifications before running yarn.
+     */
+    @Parameter(property = "srcdir", defaultValue = "src")
+    private File srcdir;
 
     @Component
     private BuildContext buildContext;
@@ -60,15 +71,23 @@ public final class YarnMojo extends AbstractFrontendMojo {
 
     @Override
     public synchronized void execute(FrontendPluginFactory factory) throws TaskRunnerException {
-        File packageJson = new File(this.workingDirectory, "package.json");
-        if (this.buildContext == null || this.buildContext.hasDelta(packageJson)
-            || !this.buildContext.isIncremental()) {
-            ProxyConfig proxyConfig = getProxyConfig();
-            boolean isYarnBerry = isYarnrcYamlFilePresent(this.session, this.workingDirectory);
-            factory.getYarnRunner(proxyConfig, getRegistryUrl(), isYarnBerry).execute(this.arguments,
-                this.environmentVariables);
+        IncrementalMojoHelper incrementalHelper = new IncrementalMojoHelper(incremental, workingDirectory, getLog());
+
+        if (incrementalHelper.shouldExecute()) {
+            File packageJson = new File(this.workingDirectory, "package.json");
+            if (this.buildContext == null || this.buildContext.hasDelta(packageJson)
+                    || !this.buildContext.isIncremental()) {
+                ProxyConfig proxyConfig = getProxyConfig();
+                boolean isYarnBerry = isYarnrcYamlFilePresent(this.session, this.workingDirectory);
+                factory.getYarnRunner(proxyConfig, getRegistryUrl(), isYarnBerry).execute(this.arguments,
+                        this.environmentVariables);
+
+                incrementalHelper.acceptIncrementalBuildDigest();
+            } else {
+                getLog().info("Skipping yarn install as package.json unchanged");
+            }
         } else {
-            getLog().info("Skipping yarn install as package.json unchanged");
+            getLog().info("Skipping yarn execution as no modified files in" + workingDirectory);
         }
     }
 
