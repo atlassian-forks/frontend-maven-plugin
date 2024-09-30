@@ -16,8 +16,8 @@
                 <version>@project.version@</version>
 
                 <configuration>
-                    <nodeVersionFile>${project.basedir}/dotfiles/.nvmrc</nodeVersionFile>
                     <installDirectory>target</installDirectory>
+                    <useNodeVersionManager>false</useNodeVersionManager>
                 </configuration>
 
                 <executions>
