@@ -90,28 +90,18 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
         String npmDownloadRoot = getNpmDownloadRoot();
         Server server = MojoUtils.decryptServer(serverId, session, decrypter);
 
-        String nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile);
-
-        if (isNull(nodeVersion)) {
-            throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
-        }
-
-        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
-            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
-        }
-
-        String validNodeVersion = getDownloadableVersion(nodeVersion);
-
         if (null != server) {
             factory.getNodeInstaller(proxyConfig)
-                .setNodeVersion(validNodeVersion)
+                .setNodeVersion(nodeVersion)
+                .setNodeVersion(nodeVersionFile)
                 .setNodeDownloadRoot(nodeDownloadRoot)
                 .setNpmVersion(npmVersion)
                 .setUserName(server.getUsername())
                 .setPassword(server.getPassword())
                 .install();
             factory.getNPMInstaller(proxyConfig)
-                .setNodeVersion(validNodeVersion)
+                .setNodeVersion(nodeVersion)
+                .setNodeVersion(nodeVersionFile)
                 .setNpmVersion(npmVersion)
                 .setNpmDownloadRoot(npmDownloadRoot)
                 .setUserName(server.getUsername())
@@ -119,13 +109,15 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
                 .install();
         } else {
             factory.getNodeInstaller(proxyConfig)
-                .setNodeVersion(validNodeVersion)
+                .setNodeVersion(nodeVersion)
+                .setNodeVersion(nodeVersionFile)
                 .setNodeDownloadRoot(nodeDownloadRoot)
                 .setNpmVersion(npmVersion)
                 .install();
             factory.getNPMInstaller(proxyConfig)
-                .setNodeVersion(validNodeVersion)
-                .setNpmVersion(this.npmVersion)
+                .setNodeVersion(nodeVersion)
+                .setNodeVersion(nodeVersionFile)
+                .setNpmVersion(npmVersion)
                 .setNpmDownloadRoot(npmDownloadRoot)
                 .install();
         }
