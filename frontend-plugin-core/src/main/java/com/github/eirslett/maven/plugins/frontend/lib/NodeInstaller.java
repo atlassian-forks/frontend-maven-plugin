@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerRunner;
+import jdk.internal.joptsimple.internal.Strings;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,12 +119,12 @@ public class NodeInstaller {
 
     private void verifyNodeVersion() throws InstallationException {
         if (this.versionManagerCache.isVersionManagerAvailable()) {
-            if (this.nodeVersion != null) {
+            if (!Strings.isNullOrEmpty(this.nodeVersion)) {
                 logger.warn("`nodeVersion` has been configured to {} but will be ignored." +
                     " Version Manager will load the version from their version file (e.g. .nvmrc, .tool-versions)", this.nodeVersion);
             }
         } else {
-            if (this.nodeVersion == null) {
+            if (Strings.isNullOrEmpty(this.nodeVersion)) {
                 throw new InstallationException("`nodeVersion` needs to be provided when running node installation without node version manager.");
             }
         }
