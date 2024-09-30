@@ -154,7 +154,7 @@ public class NodeVersionDetector {
         List<String> lines = Files.readAllLines(nvmrcFilePath);
         Optional<String> version = readNvmrcFileLines(lines);
         if (version.isPresent()) {
-            logger.info("Found the version of Node in: " + nvmrcFilePath);
+            logger.info("Found the version of Node in: " + nvmrcFilePath.normalize());
         }
         return version.orElse(null);
     }
@@ -213,7 +213,7 @@ public class NodeVersionDetector {
                     continue;
                 }
 
-                logger.info("Found the version of Node in: " + miseTomlFilePath);
+                logger.info("Found the version of Node in: " + miseTomlFilePath.normalize());
 
                 if (trimmedLine.contains("[")) {
                     throw new Exception("mise file support is limited to a single version");
@@ -245,7 +245,7 @@ public class NodeVersionDetector {
                     continue;
                 }
 
-                logger.info("Found the version of Node in: " + toolVersionsFilePath);
+                logger.info("Found the version of Node in: " + toolVersionsFilePath.normalize());
                 return trimmedLine.replaceAll("node(js)?\\s*", "");
             }
         }
