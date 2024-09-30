@@ -18,14 +18,7 @@ import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.g
 import static java.util.Objects.isNull;
 
 @Mojo(name="install-node-and-pnpm", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
-
-    /**
-     * Where to download Node.js binary from. Defaults to https://nodejs.org/dist/
-     */
-    @Parameter(property = "nodeDownloadRoot", required = false)
-    private String nodeDownloadRoot;
-
+public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
     /**
      * Where to download pnpm binary from. Defaults to https://registry.npmjs.org/pnpm/-/
      */
@@ -40,19 +33,6 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
     @Parameter(property = "downloadRoot", required = false, defaultValue = "")
     @Deprecated
     private String downloadRoot;
-
-    /**
-     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
-     * If using with node version manager (enabled by default), nodeVersion parameter will be ignored
-     */
-    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
-    private String nodeVersion;
-
-    /**
-     * The path to the file that contains the Node version to use
-     */
-    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
-    private String nodeVersionFile;
 
     /**
      * The version of pnpm to install. Note that the version string can optionally be prefixed with
@@ -85,7 +65,7 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
     }
 
     @Override
-    public void execute(FrontendPluginFactory factory) throws Exception {
+    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory) throws Exception {
         ProxyConfig proxyConfig = MojoUtils.getProxyConfig(session, decrypter);
         // Use different names to avoid confusion with fields `nodeDownloadRoot` and
         // `pnpmDownloadRoot`.
@@ -99,7 +79,6 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
         if (null != server) {
             factory.getNodeInstaller(proxyConfig)
                 .setNodeVersion(nodeVersion)
-                .setNodeVersionFile(nodeVersionFile)
                 .setNodeDownloadRoot(resolvedNodeDownloadRoot)
                 .setUserName(server.getUsername())
                 .setPassword(server.getPassword())
@@ -113,7 +92,6 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
         } else {
             factory.getNodeInstaller(proxyConfig)
                 .setNodeVersion(nodeVersion)
-                .setNodeVersionFile(nodeVersionFile)
                 .setNodeDownloadRoot(resolvedNodeDownloadRoot)
                 .install();
             factory.getPnpmInstaller(proxyConfig)

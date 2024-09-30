@@ -1,6 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.mojo;
 
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
+import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.NPMInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
@@ -18,13 +19,7 @@ import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.g
 import static java.util.Objects.isNull;
 
 @Mojo(name="install-node-and-npm", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
-
-    /**
-     * Where to download Node.js binary from. Defaults to https://nodejs.org/dist/
-     */
-    @Parameter(property = "nodeDownloadRoot", required = false)
-    private String nodeDownloadRoot;
+public final class InstallNodeAndNpmMojo extends AbstractInstallNodeMojo {
 
     /**
      * Where to download NPM binary from. Defaults to https://registry.npmjs.org/npm/-/
@@ -35,24 +30,11 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
     /**
      * Where to download Node.js and NPM binaries from.
      *
-     * @deprecated use {@link #nodeDownloadRoot} and {@link #npmDownloadRoot} instead, this configuration will be used only when no {@link #nodeDownloadRoot} or {@link #npmDownloadRoot} is specified.
+     * @deprecated use {@link AbstractInstallNodeMojo#nodeDownloadRoot} and {@link #npmDownloadRoot} instead, this configuration will be used only when no {@link AbstractInstallNodeMojo#nodeDownloadRoot} or {@link #npmDownloadRoot} is specified.
      */
     @Parameter(property = "downloadRoot", required = false, defaultValue = "")
     @Deprecated
     private String downloadRoot;
-
-    /**
-     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
-     * If using with node version manager (enabled by default), nodeVersion parameter will be ignored
-     */
-    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
-    private String nodeVersion;
-
-    /**
-     * The path to the file that contains the Node version to use
-     */
-    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
-    private String nodeVersionFile;
 
     /**
      * The version of NPM to install.
@@ -84,7 +66,7 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
     }
 
     @Override
-    public void execute(FrontendPluginFactory factory) throws Exception {
+    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory) throws Exception {
         ProxyConfig proxyConfig = MojoUtils.getProxyConfig(session, decrypter);
         String nodeDownloadRoot = getNodeDownloadRoot();
         String npmDownloadRoot = getNpmDownloadRoot();
@@ -93,7 +75,6 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
         if (null != server) {
             factory.getNodeInstaller(proxyConfig)
                 .setNodeVersion(nodeVersion)
-                .setNodeVersion(nodeVersionFile)
                 .setNodeDownloadRoot(nodeDownloadRoot)
                 .setNpmVersion(npmVersion)
                 .setUserName(server.getUsername())
@@ -101,7 +82,6 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
                 .install();
             factory.getNPMInstaller(proxyConfig)
                 .setNodeVersion(nodeVersion)
-                .setNodeVersion(nodeVersionFile)
                 .setNpmVersion(npmVersion)
                 .setNpmDownloadRoot(npmDownloadRoot)
                 .setUserName(server.getUsername())
@@ -110,13 +90,11 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
         } else {
             factory.getNodeInstaller(proxyConfig)
                 .setNodeVersion(nodeVersion)
-                .setNodeVersion(nodeVersionFile)
                 .setNodeDownloadRoot(nodeDownloadRoot)
                 .setNpmVersion(npmVersion)
                 .install();
             factory.getNPMInstaller(proxyConfig)
                 .setNodeVersion(nodeVersion)
-                .setNodeVersion(nodeVersionFile)
                 .setNpmVersion(npmVersion)
                 .setNpmDownloadRoot(npmDownloadRoot)
                 .install();

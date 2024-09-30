@@ -19,15 +19,9 @@ import static com.github.eirslett.maven.plugins.frontend.mojo.YarnUtils.isYarnrc
 import static java.util.Objects.isNull;
 
 @Mojo(name = "install-node-and-yarn", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
+public final class InstallNodeAndYarnMojo extends AbstractInstallNodeMojo {
 
     private static final String YARNRC_YAML_FILE_NAME = ".yarnrc.yml";
-
-    /**
-     * Where to download Node.js binary from. Defaults to https://nodejs.org/dist/
-     */
-    @Parameter(property = "nodeDownloadRoot", required = false)
-    private String nodeDownloadRoot;
 
     /**
      * Where to download Yarn binary from. Defaults to https://github.com/yarnpkg/yarn/releases/download/...
@@ -35,20 +29,6 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
     @Parameter(property = "yarnDownloadRoot", required = false,
         defaultValue = YarnInstaller.DEFAULT_YARN_DOWNLOAD_ROOT)
     private String yarnDownloadRoot;
-
-    /**
-     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example
-     * 'v0.10.18'
-     * If using with node version manager (enabled by default), nodeVersion parameter will be ignored
-     */
-    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
-    private String nodeVersion;
-
-    /**
-     * The path to the file that contains the Node version to use
-     */
-    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
-    private String nodeVersionFile;
 
     /**
      * The version of Yarn to install. IMPORTANT! Most Yarn names start with 'v', for example 'v0.15.0'.
@@ -80,7 +60,7 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
     }
 
     @Override
-    public void execute(FrontendPluginFactory factory) throws Exception {
+    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory) throws Exception {
         ProxyConfig proxyConfig = MojoUtils.getProxyConfig(this.session, this.decrypter);
         Server server = MojoUtils.decryptServer(this.serverId, this.session, this.decrypter);
 
@@ -90,7 +70,6 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
             factory.getNodeInstaller(proxyConfig)
                 .setNodeDownloadRoot(this.nodeDownloadRoot)
                 .setNodeVersion(nodeVersion)
-                .setNodeVersionFile(nodeVersionFile)
                 .setPassword(server.getPassword())
                 .setUserName(server.getUsername())
                 .install();
@@ -101,7 +80,6 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
             factory.getNodeInstaller(proxyConfig)
                 .setNodeDownloadRoot(this.nodeDownloadRoot)
                 .setNodeVersion(nodeVersion)
-                .setNodeVersionFile(nodeVersionFile)
                 .install();
             factory.getYarnInstaller(proxyConfig).setYarnDownloadRoot(this.yarnDownloadRoot)
                 .setYarnVersion(this.yarnVersion).setIsYarnBerry(isYarnYamlFilePresent).install();

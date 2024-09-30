@@ -158,4 +158,9 @@ public final class FrontendPluginFactory {
             }
         }
     }
+
+    public boolean isVersionManagerAvailable() {
+        if (!getInstallConfig().isUseNodeVersionManager()) return false;
+        return getVersionManagerCache().isVersionManagerAvailable();
+    }
 }

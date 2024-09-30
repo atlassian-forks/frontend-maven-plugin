@@ -14,16 +14,13 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.getDownloadableVersion;
-import static java.util.Objects.isNull;
-
 public class NodeInstaller {
 
     public static final String INSTALL_PATH = "/node";
 
     private static final Object LOCK = new Object();
 
-    private String npmVersion, nodeVersion, nodeVersionFile, nodeDownloadRoot, userName, password;
+    private String npmVersion, nodeVersion, nodeDownloadRoot, userName, password;
 
     private final Logger logger;
 
@@ -45,11 +42,6 @@ public class NodeInstaller {
 
     public NodeInstaller setNodeVersion(String nodeVersion) {
         this.nodeVersion = nodeVersion;
-        return this;
-    }
-
-    public NodeInstaller setNodeVersionFile(String nodeVersionFile) {
-        this.nodeVersionFile = nodeVersionFile;
         return this;
     }
 
@@ -93,7 +85,6 @@ public class NodeInstaller {
             if (this.nodeDownloadRoot == null || this.nodeDownloadRoot.isEmpty()) {
                 this.nodeDownloadRoot = this.installConfig.getPlatform().getNodeDownloadRoot();
             }
-            verifyAndResolveNodeVersion();
 
             // try to install with node version manager
             if (this.versionManagerCache.isVersionManagerAvailable()) {
@@ -122,35 +113,6 @@ public class NodeInstaller {
                 }
             }
         }
-    }
-
-    private void verifyAndResolveNodeVersion() throws InstallationException {
-        if (this.versionManagerCache.isVersionManagerAvailable()) {
-            if (this.nodeVersion != null && !this.nodeVersion.isEmpty()) {
-                logger.warn("`nodeVersion` has been configured to {} but will be ignored when installing with node version manager." +
-                    " Version Manager will load the version from their version file (e.g. .nvmrc, .tool-versions)", this.nodeVersion);
-            }
-        }
-
-        String nodeVersion;
-        try {
-            nodeVersion = NodeVersionDetector.getNodeVersion(this.installConfig.getWorkingDirectory(), this.nodeVersion, this.nodeVersionFile);
-        } catch (Exception e) {
-            throw new InstallationException(e.getMessage());
-        }
-
-        if (isNull(nodeVersion)) {
-            throw new InstallationException("Node version could not be detected from a file and was not set");
-        }
-
-        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
-            throw new InstallationException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
-        }
-
-        String validNodeVersion = getDownloadableVersion(nodeVersion);
-        logger.info("Resolved Node version: {}", validNodeVersion);
-
-        this.nodeVersion = validNodeVersion;
     }
 
     private boolean nodeIsAlreadyInstalled() {
