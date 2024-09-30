@@ -61,6 +61,7 @@ public final class WebpackMojo extends AbstractFrontendMojo {
     @Override
     public synchronized void execute(FrontendPluginFactory factory) throws TaskRunnerException {
         if (shouldExecute()) {
+            factory.loadVersionManager();
             factory.getWebpackRunner().execute(arguments, environmentVariables);
 
             if (outputdir != null) {
