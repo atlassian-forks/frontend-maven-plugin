@@ -92,7 +92,7 @@ public class NodeInstaller {
                 versionManagerRunner.installNodeAndUpdateCaches();
                 return;
             } else {
-                this.logger.warn("Node version manager is no available, falling back to standard node installation.");
+                this.logger.warn("Node version manager is not available, falling back to standard node installation.");
             }
 
             // try to install the standard way
