@@ -93,8 +93,6 @@ public class ShellExecutor {
     }
 
     private String getCurrentShell() {
-
-
         String shell = System.getenv("SHELL");
         if (shell == null || shell.isEmpty()) {
             logger.debug("SHELL is not available in environment variables. Trying to get it from child process.");
