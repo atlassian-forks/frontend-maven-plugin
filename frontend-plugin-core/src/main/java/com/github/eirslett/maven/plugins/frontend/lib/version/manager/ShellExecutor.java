@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -92,6 +93,24 @@ public class ShellExecutor {
     }
 
     private String getCurrentShell() {
-        return System.getenv("SHELL");
+        String shell = System.getenv("SHELL");
+        if (shell == null || shell.isEmpty()) {
+            logger.debug("SHELL is not available in environment variables. Trying to get it from child process.");
+
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            try {
+                execute(Arrays.asList("echo", "$SHELL"), stdout, stdout);
+                shell = parseOutput(stdout);
+            } catch (ProcessExecutionException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (shell.isEmpty()) {
+                logger.debug("SHELL was not available in child process. Falling back to bin/sh");
+                shell = "/bin/sh";
+            }
+        }
+
+        return shell;
     }
 }
