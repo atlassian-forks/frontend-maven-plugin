@@ -30,7 +30,7 @@ public class VersionManagerRunner {
     public void installNodeAndUpdateCaches() {
         if (!installConfig.isUseNodeVersionManager()) return;
 
-        logger.info("Installing node with {}", versionManagerCache.getVersionManagerType());
+        logger.info("Installing node with {}. (Relying on node version manager caching)", versionManagerCache.getVersionManagerType());
 
         versionManagerClient.installNode();
         populateCache();

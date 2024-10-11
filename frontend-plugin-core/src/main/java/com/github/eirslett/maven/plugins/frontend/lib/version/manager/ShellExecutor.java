@@ -29,14 +29,14 @@ public class ShellExecutor {
         try {
             int exitValue = execute(profiledShellCommand, stdout, stderr);
             if (exitValue != 0) {
-                logger.debug("Command finished with error exit code {}, error output `{}`", exitValue, parseOutput(stderr));
+                logger.debug("Command finished with an error exit code {}", exitValue);
             }
         } catch (ProcessExecutionException e) {
-            logger.debug("Command threw unexpectedly, error output: `{}`", parseOutput(stderr));
+            logger.debug("Command threw unexpectedly");
         }
 
         String output = parseOutput(stdout);
-        logger.debug("Command output: `{}`", output);
+        logger.debug("Command output: `{}`\n error output `{}`", output, parseOutput(stderr));
         return output;
     }
 
@@ -80,10 +80,16 @@ public class ShellExecutor {
 
     private List<String> getShellCommand(List<String> command) {
         List<String> profiledShellCommand =  new ArrayList<>();
-        profiledShellCommand.add(getCurrentShell());
-        profiledShellCommand.add("--login");
-        profiledShellCommand.add("-c");
-        profiledShellCommand.add(String.join(" ", command));
+
+        if (config.getPlatform().isWindows()) {
+            logger.warn("Windows is currently not supported");
+            profiledShellCommand.add(String.join(" ", command));
+        } else {
+            profiledShellCommand.add(getCurrentUnixShell());
+            profiledShellCommand.add("--login");
+            profiledShellCommand.add("-c");
+            profiledShellCommand.add(String.join(" ", command));
+        }
 
         return profiledShellCommand;
     }
@@ -92,21 +98,21 @@ public class ShellExecutor {
         return stream.toString().trim();
     }
 
-    private String getCurrentShell() {
+    private String getCurrentUnixShell() {
         String shell = System.getenv("SHELL");
         if (shell == null || shell.isEmpty()) {
-            logger.debug("SHELL is not available in environment variables. Trying to get it from child process.");
-
+            logger.debug("SHELL variable couldn't be found. Falling back on reading the variable from /bin/sh.");
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             try {
-                execute(Arrays.asList("echo", "$SHELL"), stdout, stdout);
+                execute(Arrays.asList("/bin/sh", "-c", "echo $SHELL"), stdout, stdout);
                 shell = parseOutput(stdout);
+                logger.debug("SHELL from /bin/sh: {}", shell);
             } catch (ProcessExecutionException e) {
                 throw new RuntimeException(e);
             }
 
             if (shell.isEmpty()) {
-                throw new RuntimeException("SHELL was not available in child process. Falling back to bin/sh");
+                throw new RuntimeException("SHELL is not available in environment variables. Please provide the value of $SHELL with your preferred shell.");
             }
         }
 
