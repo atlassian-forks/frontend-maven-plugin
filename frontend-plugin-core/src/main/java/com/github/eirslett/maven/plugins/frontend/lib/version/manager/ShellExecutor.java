@@ -86,7 +86,7 @@ public class ShellExecutor {
             profiledShellCommand.add(String.join(" ", command));
         } else {
             profiledShellCommand.add(getCurrentUnixShell());
-            profiledShellCommand.add("--login");
+//            profiledShellCommand.add("--login");
             profiledShellCommand.add("-c");
             profiledShellCommand.add(String.join(" ", command));
         }
