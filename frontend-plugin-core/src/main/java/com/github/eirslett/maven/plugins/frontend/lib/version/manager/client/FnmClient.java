@@ -33,6 +33,11 @@ public class FnmClient implements VersionManagerClient {
         shellExecutor.executeOrFail(Arrays.asList(
             EXECUTABLE, "use", "--install-if-missing"
         ));
+
+        // FIXME verify node installed
+        shellExecutor.executeOrFail(Arrays.asList(
+            "node", "--version"
+        ));
     }
 
     @Override
