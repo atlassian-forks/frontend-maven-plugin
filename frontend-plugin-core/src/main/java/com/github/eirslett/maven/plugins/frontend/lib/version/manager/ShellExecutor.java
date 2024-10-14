@@ -14,8 +14,10 @@ import java.util.List;
 
 public class ShellExecutor {
 
-    final Logger logger = LoggerFactory.getLogger(getClass());
-    final InstallConfig config;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final InstallConfig config;
+
+    private String shell;
 
     public ShellExecutor(InstallConfig config) {
         this.config = config;
@@ -85,10 +87,10 @@ public class ShellExecutor {
             logger.warn("Windows is currently not supported");
             profiledShellCommand.add(String.join(" ", command));
         } else {
-            profiledShellCommand.add(getCurrentUnixShell());
-//            profiledShellCommand.add("--login");
+            String shell = getCurrentUnixShell();
+            profiledShellCommand.add(shell);
             profiledShellCommand.add("-c");
-            profiledShellCommand.add(String.join(" ", command));
+            profiledShellCommand.add(getCommandWithSourcedProfile(shell, command));
         }
 
         return profiledShellCommand;
@@ -98,24 +100,44 @@ public class ShellExecutor {
         return stream.toString().trim();
     }
 
+    private String getCommandWithSourcedProfile(String shell, List<String> commandParts) {
+        String flagCommand = String.join(" ", commandParts);
+        String sourceProfile = "";
+
+        if (shell.endsWith("zsh")) {
+            sourceProfile = "source ~/.zshrc";
+        } else if (shell.endsWith("bash")) {
+            sourceProfile = "source ~/.bashrc";
+        } else {
+            sourceProfile = "source ~/.profile";
+        }
+
+        return String.format("%s && %s", sourceProfile, flagCommand);
+    }
+
     private String getCurrentUnixShell() {
-        String shell = System.getenv("SHELL");
-        if (shell == null || shell.isEmpty()) {
+        if (shell != null) return shell;
+
+        String shellFromEV = System.getenv("SHELL");
+        if (shellFromEV == null || shellFromEV.isEmpty()) {
             logger.debug("SHELL variable couldn't be found. Falling back on reading the variable from /bin/sh.");
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             try {
                 execute(Arrays.asList("/bin/sh", "-c", "echo $SHELL"), stdout, stdout);
-                shell = parseOutput(stdout);
-                logger.debug("SHELL from /bin/sh: {}", shell);
+                String shellFromSh = parseOutput(stdout);
+                logger.debug("SHELL from /bin/sh: {}", shellFromSh);
+
+                if (shellFromSh.isEmpty()) {
+                    throw new RuntimeException("SHELL is not available in environment variables. Please provide the value of $SHELL with your preferred shell.");
+                } else {
+                    shell = shellFromSh;
+                }
             } catch (ProcessExecutionException e) {
                 throw new RuntimeException(e);
             }
-
-            if (shell.isEmpty()) {
-                throw new RuntimeException("SHELL is not available in environment variables. Please provide the value of $SHELL with your preferred shell.");
-            }
+        } else {
+            shell = shellFromEV;
         }
-
         return shell;
     }
 }

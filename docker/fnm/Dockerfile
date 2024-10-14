@@ -1,0 +1,1 @@
+FROM docker.atl-paas.net/server-base-agent/sfp-base-agent:0.4.0
