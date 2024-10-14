@@ -108,11 +108,13 @@ public class ShellExecutor {
             sourceProfile = "source ~/.zshrc";
         } else if (shell.endsWith("bash")) {
             sourceProfile = "source ~/.bashrc";
+        } else if (shell.endsWith("fish")) {
+            sourceProfile = "source ~/.config/fish/config.fish";
         } else {
             sourceProfile = "source ~/.profile";
         }
 
-        return String.format("%s && %s", sourceProfile, flagCommand);
+        return String.format("%s; %s", sourceProfile, flagCommand);
     }
 
     private String getCurrentUnixShell() {

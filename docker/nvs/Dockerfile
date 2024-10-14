@@ -42,5 +42,6 @@ RUN cd $HOME \
     && mvn --version \
     && rm mvnvm.properties
 
-# Install node version manager
-RUN curl -fsSL https://fnm.vercel.app/install | bash
+RUN export NVS_HOME="$HOME/.nvs" \
+    && git clone https://github.com/jasongin/nvs "$NVS_HOME" \
+    && . "$NVS_HOME/nvs.sh" install

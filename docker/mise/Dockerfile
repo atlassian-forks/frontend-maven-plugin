@@ -42,5 +42,5 @@ RUN cd $HOME \
     && mvn --version \
     && rm mvnvm.properties
 
-# Install node version manager
-RUN curl -fsSL https://fnm.vercel.app/install | bash
+RUN curl https://mise.run | bash \
+    && echo 'eval "$(~/.local/bin/mise activate bash)"' >> ~/.bashrc
