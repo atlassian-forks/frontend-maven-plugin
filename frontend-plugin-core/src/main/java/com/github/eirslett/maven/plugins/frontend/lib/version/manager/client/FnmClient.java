@@ -31,7 +31,7 @@ public class FnmClient implements VersionManagerClient {
     @Override
     public void installNode() {
         shellExecutor.executeOrFail(Arrays.asList(
-            EXECUTABLE, "install"
+            EXECUTABLE, "use", "--install-if-missing"
         ));
     }
 
