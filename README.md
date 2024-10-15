@@ -52,6 +52,17 @@ Only Atlassians may release a new version, [follow this guide](https://hello.atl
 
 ## Usage guidance
 
+### Using Node Version Manager
+
+By default, node based goals will try to use one of supported node version managers (`fnm`, `mise`, `asdf`, `nvm`, `nvs`) to install node and to find npm. You can disable node version manager usage with `useNodeVersionManager` configuration property.
+
+If you're using `fnm`, make sure to have `--version-file-strategy=recursive` enabled in your shell profile file so that fnm can find node version files in higher levels of the project.
+
+#### Known limitations
+
+1. Windows platform is not supported as of this moment.
+2. Bitbucket pipelines hijack /bin/bash stdout and so internal commands needed to determine whether node version manager is available or not don't work.
+
 ### Format of the Node version
 
 It shouldn't matter if the `v` prefix is present, e.g. `14.8.0` and `v14.8.0`.

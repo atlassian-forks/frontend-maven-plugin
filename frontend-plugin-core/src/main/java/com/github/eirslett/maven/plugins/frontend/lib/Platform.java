@@ -66,7 +66,7 @@ enum OS { Windows, Mac, Linux, SunOS, AIX;
     }
 }
 
-class Platform {
+public class Platform {
 
     /**
      * Node.js supports Apple silicon since v16
