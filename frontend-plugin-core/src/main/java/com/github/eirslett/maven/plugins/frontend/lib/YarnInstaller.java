@@ -85,8 +85,6 @@ public class YarnInstaller {
             YarnExecutorConfig executorConfig = new InstallYarnExecutorConfig(config, isYarnBerry);
             File nodeFile = executorConfig.getYarnPath();
             if (nodeFile.exists()) {
-                String nodeVersion = new YarnExecutor(executorConfig, Arrays.asList("--version"), null).executeAndGetResult(logger).trim();
-
                 final String version =
                     new YarnExecutor(executorConfig, Arrays.asList("--version"), null).executeAndGetResult(logger).trim();
 
