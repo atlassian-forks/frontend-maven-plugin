@@ -1,49 +1,74 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager.client;
 
-import com.github.eirslett.maven.plugins.frontend.lib.version.manager.ShellExecutor;
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.CommandExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class MiseClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
-    final ShellExecutor shellExecutor;
+    final CommandExecutor commandExecutor;
 
-    private static final String EXECUTABLE = "mise";
-
-    public MiseClient(ShellExecutor shellExecutor) {
-        this.shellExecutor = shellExecutor;
+    public MiseClient(CommandExecutor commandExecutor) {
+        this.commandExecutor = commandExecutor;
     }
 
     @Override
     public boolean isInstalled() {
-        String version = shellExecutor.executeAndCatchErrors(Arrays.asList(
-            EXECUTABLE, "--version"
-        ));
+        String miseBinDir = getMiseBinDir();
+        logger.debug("Checking if MISE installation directory exists: {}", miseBinDir);
 
-        return version.matches("\\d+\\.\\d+\\.\\d+ .*");
+        return miseBinDir != null;
     }
 
     @Override
     public void installNode() {
-        shellExecutor.executeOrFail(Arrays.asList(
-            EXECUTABLE, "install", "node"
-        ));
+        commandExecutor
+            .withPath(getMiseBinDir())
+            .executeOrFail(Arrays.asList(getExecutable(), "install", "node"));
     }
 
     @Override
     public File getNodeExecutable() {
-        return new File(shellExecutor.executeOrFail(Arrays.asList(
-            EXECUTABLE, "which", "node"
-        )));
+        String nodePath = commandExecutor
+            .withPath(getMiseBinDir())
+            .executeOrFail(Arrays.asList(getExecutable(), "which", "node"));
+
+        return new File(nodePath);
     }
 
     @Override
     public File getNpmExecutable() {
         File nodeExec = getNodeExecutable();
         return Paths.get(nodeExec.getParentFile().getParent(), "/lib/node_modules/npm/bin/npm-cli.js").toFile();
+    }
+
+    private String getExecutable() {
+        return Paths.get(getMiseBinDir(), "mise").toString();
+    }
+
+    private String getMiseBinDir() {
+        String miseInstallPath = System.getenv("MISE_INSTALL_PATH");
+        if (miseInstallPath != null) {
+            Path path = Paths.get(miseInstallPath);
+            if (Files.exists(path)) {
+                return path.getParent().toString();
+            }
+        }
+
+        String home = System.getenv("HOME");
+        if (home != null) {
+            Path path = Paths.get(home, ".local", "bin", "mise");
+            if (Files.exists(path)) {
+                return path.getParent().toString();
+            }
+        }
+
+        return null;
     }
 }

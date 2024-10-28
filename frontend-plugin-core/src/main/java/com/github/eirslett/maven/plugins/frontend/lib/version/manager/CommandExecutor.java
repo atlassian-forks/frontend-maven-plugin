@@ -12,24 +12,30 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class ShellExecutor {
+public class CommandExecutor {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final InstallConfig config;
 
     private String shell;
+    private ProcessExecutor executor;
 
-    public ShellExecutor(InstallConfig config) {
+    private String fileToSource;
+    private String pathToInclude;
+
+    public CommandExecutor(InstallConfig config) {
         this.config = config;
     }
 
-    public String executeAndCatchErrors(List<String> command, List<String> paths) {
+    public String executeAndCatchErrors(List<String> command) {
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
-        List<String> profiledShellCommand = getShellCommand(command);
+        if (shell != null) {
+            command = getShellCommand(command);
+        }
 
         try {
-            int exitValue = execute(profiledShellCommand, stdout, stderr, paths);
+            int exitValue = execute(command, Collections.singletonList(pathToInclude), stdout, stderr);
             if (exitValue != 0) {
                 logger.debug("Command finished with an error exit code {}", exitValue);
             }
@@ -42,18 +48,16 @@ public class ShellExecutor {
         return output;
     }
 
-    public String executeAndCatchErrors(List<String> command) {
-        return executeAndCatchErrors(command, Collections.emptyList());
-    }
-
-    public String executeOrFail(List<String> command, List<String> paths) {
+    public String executeOrFail(List<String> command) {
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
-        List<String> profiledShellCommand = getShellCommand(command);
+        if (shell != null) {
+            command = getShellCommand(command);
+        }
 
         boolean hasExecutionFailed = false;
         try {
-            int exitValue = execute(profiledShellCommand, stdout, stderr, paths);
+            int exitValue = execute(command, Collections.singletonList(pathToInclude), stdout, stderr);
             if (exitValue != 0) {
                 hasExecutionFailed = true;
             }
@@ -62,7 +66,7 @@ public class ShellExecutor {
         }
 
         if (hasExecutionFailed) {
-            String commandText = String.join(" ", profiledShellCommand);
+            String commandText = String.join(" ", command);
             throw new RuntimeException(String.format("Execution of `%s` has failed" +
                 "\nstdout: `%s`" +
                 "\nstderr: `%s`", commandText, parseOutput(stdout), parseOutput(stderr)));
@@ -73,68 +77,67 @@ public class ShellExecutor {
         }
     }
 
-    public String executeOrFail(List<String> command) {
-        return executeOrFail(command, Collections.emptyList());
+    public CommandExecutor withShell() {
+        setCurrentUnixShell();
+        return this;
     }
 
-    private int execute(List<String> command, ByteArrayOutputStream stdout, ByteArrayOutputStream stderr, List<String> paths) throws ProcessExecutionException {
-        ProcessExecutor executor = new ProcessExecutor(
-            config.getWorkingDirectory(),
-            paths,
-            command,
-            config.getPlatform(),
-            Collections.emptyMap());
-
-        return executor.execute(logger, stdout, stderr);
+    public CommandExecutor withSourced(String file) {
+        fileToSource = file;
+        return this;
     }
 
-    private List<String> getShellCommand(List<String> command) {
-        List<String> profiledShellCommand =  new ArrayList<>();
+    public CommandExecutor withPath(String path) {
+        pathToInclude = path;
+        return this;
+    }
 
-        // FIXME
-        if (config.getPlatform().isWindows() || true) {
-            logger.warn("Windows is currently not supported");
-            profiledShellCommand.addAll(command);
-        } else {
-            String shell = getCurrentUnixShell();
-            profiledShellCommand.add(shell);
-            profiledShellCommand.add("-c");
-            profiledShellCommand.add(getCommandWithSourcedProfile(shell, command));
+    public void initializeProcessExecutor(List<String> paths) {
+        if (executor == null) {
+            executor = new ProcessExecutor(
+                config.getWorkingDirectory(),
+                paths,
+                Arrays.asList("echo", "running empty command..."),
+                config.getPlatform(),
+                Collections.emptyMap());
         }
+    }
 
-        return profiledShellCommand;
+    private int execute(List<String> command, List<String> paths, ByteArrayOutputStream stdout, ByteArrayOutputStream stderr) throws ProcessExecutionException {
+        initializeProcessExecutor(Collections.emptyList());
+        return executor.execute(command, paths, logger, stdout, stderr);
     }
 
     private String parseOutput(ByteArrayOutputStream stream) {
         return stream.toString().trim();
     }
 
-    private String getCommandWithSourcedProfile(String shell, List<String> commandParts) {
-        String flagCommand = String.join(" ", commandParts);
-        String sourceProfile = "";
+    private List<String> getShellCommand(List<String> commandParts) {
+        String flatCommand = String.join(" ", commandParts);
 
-        if (shell.endsWith("zsh")) {
-            sourceProfile = "source ~/.zshrc";
-        } else if (shell.endsWith("bash")) {
-            sourceProfile = "source ~/.bashrc";
-        } else if (shell.endsWith("fish")) {
-            sourceProfile = "source ~/.config/fish/config.fish";
+        List<String> commandWithSourcedProfile = new ArrayList<>();
+        commandWithSourcedProfile.add(shell);
+        commandWithSourcedProfile.add("-c");
+
+        if (fileToSource != null) {
+            String sourceCommand = String.format(". %s", fileToSource);
+            commandWithSourcedProfile.add(String.format("%s; %s", sourceCommand, flatCommand));
         } else {
-            sourceProfile = "source ~/.profile";
+            commandWithSourcedProfile.add(flatCommand);
         }
 
-        return String.format("%s; %s", sourceProfile, flagCommand);
+        return commandWithSourcedProfile;
     }
 
-    private String getCurrentUnixShell() {
-        if (shell != null) return shell;
+    private void setCurrentUnixShell() {
+        if (shell != null) return;
 
         String shellFromEV = System.getenv("SHELL");
         if (shellFromEV == null || shellFromEV.isEmpty()) {
             logger.debug("SHELL variable couldn't be found. Falling back on reading the variable from /bin/sh.");
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             try {
-                execute(Arrays.asList("/bin/sh", "-c", "echo $SHELL"), stdout, stdout, Collections.emptyList());
+                execute(Arrays.asList("/bin/sh", "-c", "echo $SHELL"), Collections.emptyList(), stdout, stdout);
                 String shellFromSh = parseOutput(stdout);
                 logger.debug("SHELL from /bin/sh: {}", shellFromSh);
 
@@ -149,6 +152,5 @@ public class ShellExecutor {
         } else {
             shell = shellFromEV;
         }
-        return shell;
     }
 }

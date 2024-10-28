@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +23,17 @@ import org.slf4j.Logger;
 public final class ProcessExecutor {
     private final static String PATH_ENV_VAR = "PATH";
 
-    private final Map<String, String> environment;
+    private Map<String, String> environment;
     private CommandLine commandLine;
     private final Executor executor;
+    private final Platform platform;
 
     public ProcessExecutor(File workingDirectory, List<String> paths, List<String> command, Platform platform, Map<String, String> additionalEnvironment){
         this(workingDirectory, paths, command, platform, additionalEnvironment, 0);
     }
 
     public ProcessExecutor(File workingDirectory, List<String> paths, List<String> command, Platform platform, Map<String, String> additionalEnvironment, long timeoutInSeconds) {
+        this.platform = platform;
         this.environment = createEnvironment(paths, platform, additionalEnvironment);
         this.commandLine = createCommandLine(command);
         this.executor = createExecutor(workingDirectory, timeoutInSeconds);
@@ -51,6 +54,13 @@ public final class ProcessExecutor {
     public int executeAndRedirectOutput(final Logger logger) throws ProcessExecutionException {
         OutputStream stdout = new LoggerOutputStream(logger, 0);
         return execute(logger, stdout, stdout);
+    }
+
+    public int execute(List<String> command, List<String> paths, final Logger logger, final OutputStream stdout, final OutputStream stderr)
+        throws ProcessExecutionException {
+        this.commandLine = createCommandLine(command);
+        this.environment = createEnvironment(paths, platform, Collections.emptyMap());
+        return execute(logger, stdout, stderr);
     }
 
     public int execute(final Logger logger, final OutputStream stdout, final OutputStream stderr)
