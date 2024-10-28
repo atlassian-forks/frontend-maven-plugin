@@ -15,8 +15,6 @@ public class FnmClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
     final CommandExecutor commandExecutor;
 
-    private static final String EXECUTABLE = "fnm";
-
     public FnmClient(CommandExecutor commandExecutor) {
         this.commandExecutor = commandExecutor;
     }
@@ -33,14 +31,14 @@ public class FnmClient implements VersionManagerClient {
     public void installNode() {
         commandExecutor
             .withPath(getFnmDir())
-            .executeOrFail(Arrays.asList(EXECUTABLE, "use", "--install-if-missing"));
+            .executeOrFail(Arrays.asList(getExecutable(), "use", "--install-if-missing"));
     }
 
     @Override
     public File getNodeExecutable() {
         String output = commandExecutor
             .withPath(getFnmDir())
-            .executeOrFail(Arrays.asList(EXECUTABLE, "current"));
+            .executeOrFail(Arrays.asList(getExecutable(), "current"));
         String currentNodeVersion = cleanOutput(output);
         String fnmDir = getFnmDir();
 
@@ -59,6 +57,10 @@ public class FnmClient implements VersionManagerClient {
         return Arrays.stream(lines)
             .filter(line -> !line.startsWith("Using Node")) // fnm echos which version is used when using `--use-on-cd`
             .collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    private String getExecutable() {
+        return Paths.get(getFnmDir(), "fnm").toString();
     }
 
     private String getFnmDir() {

@@ -66,6 +66,8 @@ public final class ProcessExecutor {
     public int execute(final Logger logger, final OutputStream stdout, final OutputStream stderr)
             throws ProcessExecutionException {
         logger.debug("Executing command line {}", commandLine);
+        // FIXME
+        logger.debug("Environment: {}", environment);
         try {
             ExecuteStreamHandler streamHandler = new PumpStreamHandler(stdout, stderr);
             executor.setStreamHandler(streamHandler);
