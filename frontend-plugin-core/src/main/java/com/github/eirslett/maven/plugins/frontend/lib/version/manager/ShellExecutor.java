@@ -23,18 +23,18 @@ public class ShellExecutor {
         this.config = config;
     }
 
-    public String executeAndCatchErrors(List<String> command) {
+    public String executeAndCatchErrors(List<String> command, List<String> paths) {
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
         List<String> profiledShellCommand = getShellCommand(command);
 
         try {
-            int exitValue = execute(profiledShellCommand, stdout, stderr);
+            int exitValue = execute(profiledShellCommand, stdout, stderr, paths);
             if (exitValue != 0) {
                 logger.debug("Command finished with an error exit code {}", exitValue);
             }
         } catch (ProcessExecutionException e) {
-            logger.debug("Command threw unexpectedly");
+            logger.debug("Command threw unexpectedly {}", stderr);
         }
 
         String output = parseOutput(stdout);
@@ -42,14 +42,18 @@ public class ShellExecutor {
         return output;
     }
 
-    public String executeOrFail(List<String> command) {
+    public String executeAndCatchErrors(List<String> command) {
+        return executeAndCatchErrors(command, Collections.emptyList());
+    }
+
+    public String executeOrFail(List<String> command, List<String> paths) {
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
         List<String> profiledShellCommand = getShellCommand(command);
 
         boolean hasExecutionFailed = false;
         try {
-            int exitValue = execute(profiledShellCommand, stdout, stderr);
+            int exitValue = execute(profiledShellCommand, stdout, stderr, paths);
             if (exitValue != 0) {
                 hasExecutionFailed = true;
             }
@@ -69,10 +73,14 @@ public class ShellExecutor {
         }
     }
 
-    private int execute(List<String> command, ByteArrayOutputStream stdout, ByteArrayOutputStream stderr) throws ProcessExecutionException {
+    public String executeOrFail(List<String> command) {
+        return executeOrFail(command, Collections.emptyList());
+    }
+
+    private int execute(List<String> command, ByteArrayOutputStream stdout, ByteArrayOutputStream stderr, List<String> paths) throws ProcessExecutionException {
         ProcessExecutor executor = new ProcessExecutor(
             config.getWorkingDirectory(),
-            Collections.emptyList(),
+            paths,
             command,
             config.getPlatform(),
             Collections.emptyMap());
@@ -83,9 +91,10 @@ public class ShellExecutor {
     private List<String> getShellCommand(List<String> command) {
         List<String> profiledShellCommand =  new ArrayList<>();
 
-        if (config.getPlatform().isWindows()) {
+        // FIXME
+        if (config.getPlatform().isWindows() || true) {
             logger.warn("Windows is currently not supported");
-            profiledShellCommand.add(String.join(" ", command));
+            profiledShellCommand.addAll(command);
         } else {
             String shell = getCurrentUnixShell();
             profiledShellCommand.add(shell);
@@ -125,7 +134,7 @@ public class ShellExecutor {
             logger.debug("SHELL variable couldn't be found. Falling back on reading the variable from /bin/sh.");
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             try {
-                execute(Arrays.asList("/bin/sh", "-c", "echo $SHELL"), stdout, stdout);
+                execute(Arrays.asList("/bin/sh", "-c", "echo $SHELL"), stdout, stdout, Collections.emptyList());
                 String shellFromSh = parseOutput(stdout);
                 logger.debug("SHELL from /bin/sh: {}", shellFromSh);
 
