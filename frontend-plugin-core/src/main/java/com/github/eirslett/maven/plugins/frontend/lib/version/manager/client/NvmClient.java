@@ -27,8 +27,8 @@ public class NvmClient implements VersionManagerClient {
 
     @Override
     public File getNodeExecutable(String nodeVersion) {
-        String nodePath = ""; // TODO
-        return new File(nodePath);
+        String nvmDir = getNvmDir();
+        return Paths.get(nvmDir, "versions", "node", nodeVersion, "bin", "node").toFile();
     }
 
     @Override

@@ -14,4 +14,5 @@ echo "NVM_DIR set";
 );
 echo "NVM checked out";
 
-
+. "$NVM_DIR/nvm.sh" \
+  && nvm install v20.15.1
