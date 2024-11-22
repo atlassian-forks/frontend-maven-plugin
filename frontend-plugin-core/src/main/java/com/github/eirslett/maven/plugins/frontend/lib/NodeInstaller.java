@@ -107,7 +107,7 @@ public class NodeInstaller {
             if (this.versionManagerCache.isVersionManagerAvailable()) {
                 VersionManagerRunner versionManagerRunner = new VersionManagerRunner(installConfig, versionManagerCache);
                 versionManagerRunner.installNodeAndUpdateCaches();
-                return;
+                return work;
             } else {
                 this.logger.warn("Node version manager is not available, falling back to standard node installation.");
             }
