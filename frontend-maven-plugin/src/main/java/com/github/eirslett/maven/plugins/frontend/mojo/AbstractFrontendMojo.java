@@ -1,25 +1,30 @@
 package com.github.eirslett.maven.plugins.frontend.mojo;
 
-import java.io.File;
-import java.util.Map;
-
-import org.apache.maven.lifecycle.LifecycleExecutionException;
+import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
+import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Server;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.RepositorySystemSession;
 
-import com.github.eirslett.maven.plugins.frontend.lib.FrontendException;
-import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
-import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
+import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractFrontendMojo extends AbstractMojo {
 
     @Component
     protected MojoExecution execution;
+
+    @Component
+    private PluginDescriptor pluginDescriptor;
 
     /**
      * Whether you should skip while running in the test phase (default is false)
@@ -114,4 +119,38 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Provides the HTTP-Headers from the server section of settings.xml.
+     *
+     * @param server
+     *           the &lt;server&gt; entry from the settings.xml
+     *
+     * @return the mapping from the name of each configured HTTP header to its value,
+     *         an empty map if there is no such configuration
+     */
+    protected Map<String, String> getHttpHeaders(Server server) {
+        if (server == null || !(server.getConfiguration() instanceof Xpp3Dom)) {
+            return Collections.emptyMap();
+        }
+
+        Xpp3Dom configuration = (Xpp3Dom) server.getConfiguration();
+
+        Map<String, String> result = new HashMap<>();
+
+        Xpp3Dom httpHeaders = configuration.getChild("httpHeaders");
+        if (httpHeaders != null) {
+            for (Xpp3Dom property : httpHeaders.getChildren("property")) {
+                Xpp3Dom name = property.getChild("name");
+                Xpp3Dom value = property.getChild("value");
+                if (name != null && value != null) {
+                    result.put(name.getValue(), value.getValue());
+                }
+            }
+        }
+        return result;
+    }
+
+    String getFrontendMavenPluginVersion() {
+        return pluginDescriptor.getVersion();
+    }
 }
