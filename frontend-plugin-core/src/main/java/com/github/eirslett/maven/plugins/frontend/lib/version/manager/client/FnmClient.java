@@ -1,6 +1,6 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager.client;
 
-import com.github.eirslett.maven.plugins.frontend.lib.version.manager.CommandExecutor;
+import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,15 +8,13 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class FnmClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
-    final CommandExecutor commandExecutor;
+    final InstallConfig installConfig;
 
-    public FnmClient(CommandExecutor commandExecutor) {
-        this.commandExecutor = commandExecutor;
+    public FnmClient(InstallConfig installConfig) {
+        this.installConfig = installConfig;
     }
 
     @Override

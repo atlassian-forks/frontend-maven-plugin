@@ -11,5 +11,8 @@ export NVS_HOME="$HOME/.nvs"
 git clone https://github.com/jasongin/nvs "$NVS_HOME"
 echo "NVS checked out";
 
-\. "$NVS_HOME/nvs.sh" install
+. "$NVS_HOME/nvs.sh" install
 echo "NVS has installed itself into the shell"
+
+. "$NVS_HOME/nvs.sh" \
+  && nvs add v20.15.1

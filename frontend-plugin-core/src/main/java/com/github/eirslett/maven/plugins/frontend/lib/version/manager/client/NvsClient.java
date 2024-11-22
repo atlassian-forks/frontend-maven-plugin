@@ -1,6 +1,6 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager.client;
 
-import com.github.eirslett.maven.plugins.frontend.lib.version.manager.CommandExecutor;
+import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,14 +8,13 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 public class NvsClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
-    final CommandExecutor commandExecutor;
+    final InstallConfig installConfig;
 
-    public NvsClient(CommandExecutor commandExecutor) {
-        this.commandExecutor = commandExecutor;
+    public NvsClient(InstallConfig installConfig) {
+        this.installConfig = installConfig;
     }
 
     @Override
@@ -27,8 +26,10 @@ public class NvsClient implements VersionManagerClient {
 
     @Override
     public File getNodeExecutable(String nodeVersion) {
-        String nodePath = "";
-        return new File(nodePath);
+        String nvsDir = getNvsDir();
+        String cleanNodeVersion = nodeVersion.replace("v", "");
+        String architecture = installConfig.getPlatform().getArchitectureName();
+        return Paths.get(nvsDir, "node", cleanNodeVersion, architecture, "bin", "node").toFile();
     }
 
     @Override

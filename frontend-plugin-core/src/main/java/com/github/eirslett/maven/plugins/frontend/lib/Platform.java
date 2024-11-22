@@ -145,6 +145,10 @@ public class Platform {
         return os == OS.Mac;
     }
 
+    public String getArchitectureName() {
+        return architecture.name();
+    }
+
     public String getLongNodeFilename(String nodeVersion, boolean archiveOnWindows) {
         if(isWindows() && !archiveOnWindows){
             return "node.exe";
