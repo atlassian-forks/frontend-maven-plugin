@@ -34,8 +34,6 @@ public abstract class AbstractNodeMojo extends AbstractFrontendMojo {
     @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
     protected String nodeVersionFile;
 
-    protected String verifiedNodeVersion;
-
     @Override
     protected void execute(FrontendPluginFactory factory) throws Exception {
         String nodeVersion = verifyAndResolveNodeVersion(factory);

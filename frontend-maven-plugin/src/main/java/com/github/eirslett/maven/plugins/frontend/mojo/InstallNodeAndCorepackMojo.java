@@ -36,31 +36,13 @@ import static com.github.eirslett.maven.plugins.frontend.mojo.AtlassianUtil.isAt
 import static java.util.Objects.isNull;
 
 @Mojo(name="install-node-and-corepack", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class InstallNodeAndCorepackMojo extends AbstractFrontendMojo {
-
-    /**
-     * Where to download Node.js binary from. Defaults to https://nodejs.org/dist/
-     */
-    @Parameter(property = "nodeDownloadRoot", required = false)
-    private String nodeDownloadRoot;
+public final class InstallNodeAndCorepackMojo extends AbstractNodeMojo {
 
     /**
      * Where to download corepack binary from. Defaults to https://registry.npmjs.org/corepack/-/
      */
     @Parameter(property = "corepackDownloadRoot", required = false)
     private String corepackDownloadRoot;
-
-    /**
-     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
-     */
-    @Parameter(property="nodeVersion", required = false)
-    private String nodeVersion;
-
-    /**
-     * The path to the file that contains the Node version to use
-     */
-    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
-    private String nodeVersionFile;
 
     /**
      * The version of corepack to install. Note that the version string can optionally be prefixed with
@@ -98,23 +80,11 @@ public final class InstallNodeAndCorepackMojo extends AbstractFrontendMojo {
     }
 
     @Override
-    public void execute(FrontendPluginFactory factory) throws Exception {
+    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String validNodeVersion) throws Exception {
         boolean pacAttemptFailed = false;
         boolean triedToUsePac = false;
         boolean failed = false;
         Timer timer = new Timer();
-
-        String nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
-
-        if (isNull(nodeVersion)) {
-            throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
-        }
-
-        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
-            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
-        }
-
-        String validNodeVersion = getDownloadableVersion(nodeVersion);
 
         try {
             if (isAtlassianProject(project) && isBlank(serverId) &&

@@ -41,20 +41,6 @@ public final class NpmMojo extends AbstractNodeMojo {
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
-    // TODO extract to abstract Node env mojo
-    /**
-     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
-     * If using with node version manager (enabled by default), nodeVersion parameter will be ignored
-     */
-    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
-    private String nodeVersion;
-
-    /**
-     * The path to the file that contains the Node version to use
-     */
-    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
-    private String nodeVersionFile;
-
     @Component
     private BuildContext buildContext;
 
@@ -81,15 +67,15 @@ public final class NpmMojo extends AbstractNodeMojo {
 
         incrementExecutionCount(project.getArtifactId(), arguments, NPM, getFrontendMavenPluginVersion(), incrementalEnabled, willBeIncremental, () -> {
 
-        if (!willBeIncremental) {
-            ProxyConfig proxyConfig = getProxyConfig();
+            if (!willBeIncremental) {
+                ProxyConfig proxyConfig = getProxyConfig();
 
-            this.nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
+                this.nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
 
-            factory.getNpmRunner(proxyConfig, getRegistryUrl()).execute(arguments, environmentVariables);
-        } else {
-            getLog().info("Skipping npm install as package.json unchanged");
-        }
+                factory.getNpmRunner(proxyConfig, getRegistryUrl()).execute(arguments, environmentVariables);
+            } else {
+                getLog().info("Skipping npm install as package.json unchanged");
+            }
 
         });
     }
