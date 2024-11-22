@@ -28,15 +28,29 @@ public class MiseClient implements VersionManagerClient {
 
     @Override
     public File getNodeExecutable(String nodeVersion) {
-        String nodePath = ""; // TODO
+        String miseNodeDir = getMiseNodeDir();
+        if (miseNodeDir == null) return null;
 
-        return new File(nodePath);
+        String cleanNodeVersion = nodeVersion.replace("v", "");
+        return Paths.get(miseNodeDir, cleanNodeVersion, "bin", "node").toFile();
     }
 
     @Override
     public File getNpmExecutable(String nodeVersion) {
         File nodeExec = getNodeExecutable(nodeVersion);
         return Paths.get(nodeExec.getParentFile().getParent(), "/lib/node_modules/npm/bin/npm-cli.js").toFile();
+    }
+
+    private String getMiseNodeDir() {
+        String home = System.getenv("HOME");
+        if (home != null) {
+            Path path = Paths.get(home, ".local", "share", "mise", "installs", "node");
+            if (Files.exists(path)) {
+                return path.toString();
+            }
+        }
+
+        return null;
     }
 
     private String getMiseBinDir() {

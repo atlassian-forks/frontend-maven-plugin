@@ -10,3 +10,8 @@ echo "MISE_INSTALL_PATH set: $MISE_INSTALL_PATH"
 export MISE_DEBUG=true
 curl https://mise.run | sh
 echo "MISE has been installed"
+
+mise --version
+
+eval "$($MISE_INSTALL_PATH activate bash)" \
+  && mise use -g node@20.15.1
