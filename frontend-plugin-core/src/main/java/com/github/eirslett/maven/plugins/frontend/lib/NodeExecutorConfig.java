@@ -42,7 +42,7 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
 
   @Override
   public File getNodePath() {
-    if (versionManagerCache != null && versionManagerCache.isVersionManagerInstalled()) return versionManagerCache.getNodeExecutable();
+    if (versionManagerCache != null && versionManagerCache.isNodeAvailable()) return versionManagerCache.getNodeExecutable();
 
     String nodeExecutable = getPlatform().isWindows() ? NODE_WINDOWS : NODE_DEFAULT;
     return new File(installConfig.getInstallDirectory() + nodeExecutable);
@@ -50,7 +50,7 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
 
   @Override
   public File getNpmPath() {
-    if (versionManagerCache != null && versionManagerCache.isVersionManagerInstalled()) return versionManagerCache.getNpmExecutable();
+    if (versionManagerCache != null && versionManagerCache.isNodeAvailable()) return versionManagerCache.getNpmExecutable();
 
     return new File(installConfig.getInstallDirectory() + Utils.normalize(NPM));
   }

@@ -14,8 +14,6 @@ public class AsdfClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
     final CommandExecutor commandExecutor;
 
-    private static final String EXECUTABLE = "asdf";
-
     public AsdfClient(CommandExecutor commandExecutor) {
         this.commandExecutor = commandExecutor;
     }
@@ -28,43 +26,15 @@ public class AsdfClient implements VersionManagerClient {
     }
 
     @Override
-    public void installNode() {
-        commandExecutor
-            .withShell()
-            .withSourced(getAsdfScript())
-            .executeOrFail(Arrays.asList(
-                EXECUTABLE, "plugin", "add", "nodejs"
-            ));
-        commandExecutor
-            .withShell()
-            .withSourced(getAsdfScript())
-            .executeOrFail(Arrays.asList(
-                EXECUTABLE, "install", "nodejs"
-            ));
-    }
-
-    @Override
-    public File getNodeExecutable() {
-        String nodePath = commandExecutor
-            .withShell()
-            .withSourced(getAsdfScript())
-            .executeOrFail(Arrays.asList(
-                EXECUTABLE, "which", "node"
-            ));
+    public File getNodeExecutable(String nodeVersion) {
+        String nodePath = ""; // TODO
         return new File(nodePath);
     }
 
     @Override
-    public File getNpmExecutable() {
-        File nodeExec = getNodeExecutable();
+    public File getNpmExecutable(String nodeVersion) {
+        File nodeExec = getNodeExecutable(nodeVersion);
         return Paths.get(nodeExec.getParent(), "npm").toFile();
-    }
-
-    private String getAsdfScript() {
-        String asdfDir = getAsdfDir();
-        String asdfScript = Paths.get(asdfDir, "asdf.sh").toString();
-
-        return asdfScript;
     }
 
     private String getAsdfDir() {

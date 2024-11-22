@@ -14,8 +14,6 @@ public class NvsClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
     final CommandExecutor commandExecutor;
 
-    private static final String EXECUTABLE = "nvs";
-
     public NvsClient(CommandExecutor commandExecutor) {
         this.commandExecutor = commandExecutor;
     }
@@ -28,38 +26,15 @@ public class NvsClient implements VersionManagerClient {
     }
 
     @Override
-    public void installNode() {
-        commandExecutor
-            .withShell()
-            .withSourced(getNvsScript())
-            .executeOrFail(Arrays.asList(
-                EXECUTABLE, "add"
-            ));
-    }
-
-    @Override
-    public File getNodeExecutable() {
-        String nodePath = commandExecutor
-            .withShell()
-            .withSourced(getNvsScript())
-            .executeOrFail(Arrays.asList(
-                EXECUTABLE, "which", "node"
-            ));
+    public File getNodeExecutable(String nodeVersion) {
+        String nodePath = "";
         return new File(nodePath);
     }
 
     @Override
-    public File getNpmExecutable() {
-        File nodeExec = getNodeExecutable();
+    public File getNpmExecutable(String nodeVersion) {
+        File nodeExec = getNodeExecutable(nodeVersion);
         return new File(nodeExec.getParent(), "npm");
-    }
-
-
-    private String getNvsScript() {
-        String nvsDir = getNvsDir();
-        String nvsScript = Paths.get(nvsDir, "nvs.sh").toString();
-
-        return nvsScript;
     }
 
     private String getNvsDir() {

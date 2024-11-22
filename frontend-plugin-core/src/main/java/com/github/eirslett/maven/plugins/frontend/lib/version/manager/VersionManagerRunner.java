@@ -1,10 +1,13 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
+import com.github.eirslett.maven.plugins.frontend.lib.Utils;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerClient;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 
 public class VersionManagerRunner {
 
@@ -24,26 +27,18 @@ public class VersionManagerRunner {
         this.versionManagerClient = versionManagerFactory.getClient(versionManagerCache.getVersionManagerType());
     }
 
-    /**
-     * This method updates global configs as a side effect
-     */
-    public void installNodeAndUpdateCaches() {
+    public void populateCacheForVersion(String nodeVersion) {
         if (!installConfig.isUseNodeVersionManager()) return;
+        logger.debug("Populating version manager cache for node: {}", nodeVersion);
 
-        logger.info("Installing node with {}. (Relying on node version manager caching)", versionManagerCache.getVersionManagerType());
+        this.versionManagerCache.setNodeExecutable(versionManagerClient.getNodeExecutable(nodeVersion));
+        this.versionManagerCache.setNpmExecutable(versionManagerClient.getNpmExecutable(nodeVersion));
 
-        versionManagerClient.installNode();
-        populateCache();
-
-        logger.info("Node has been installed");
-    }
-
-    public void populateCache() {
-        if (!installConfig.isUseNodeVersionManager()) return;
-        logger.info("Populating version manager cache");
-
-        this.versionManagerCache.setVersionManagerInstalled(true);
-        this.versionManagerCache.setNodeExecutable(versionManagerClient.getNodeExecutable());
-        this.versionManagerCache.setNpmExecutable(versionManagerClient.getNpmExecutable());
+        if (versionManagerCache.isNodeAvailable()) {
+            logger.info("Using {} version manager", versionManagerCache.getVersionManagerType());
+            logger.info("Requested node version {} is already installed", nodeVersion);
+        } else {
+            logger.warn("Requested node version {} is not installed in version manager", nodeVersion);
+        }
     }
 }

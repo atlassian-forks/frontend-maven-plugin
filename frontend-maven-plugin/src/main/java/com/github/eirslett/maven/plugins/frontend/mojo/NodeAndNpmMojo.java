@@ -6,10 +6,14 @@ import com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporte
 import com.github.eirslett.maven.plugins.frontend.lib.DownloadException;
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
 import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
+import com.github.eirslett.maven.plugins.frontend.lib.NPMInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
-import com.github.eirslett.maven.plugins.frontend.lib.PnpmInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -19,44 +23,41 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.UNKNOWN;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporter.formatNodeVersionForMetric;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporter.getHostForMetric;
 import static com.github.eirslett.maven.plugins.frontend.lib.NPMInstaller.ATLASSIAN_NPM_DOWNLOAD_ROOT;
+import static com.github.eirslett.maven.plugins.frontend.lib.NPMInstaller.DEFAULT_NPM_DOWNLOAD_ROOT;
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeInstaller.ATLASSIAN_NODE_DOWNLOAD_ROOT;
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeInstaller.NODEJS_ORG;
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.getDownloadableVersion;
-import static com.github.eirslett.maven.plugins.frontend.lib.PnpmInstaller.DEFAULT_PNPM_DOWNLOAD_ROOT;
 import static com.github.eirslett.maven.plugins.frontend.lib.Utils.isBlank;
 import static com.github.eirslett.maven.plugins.frontend.mojo.AtlassianUtil.isAtlassianProject;
 import static java.util.Objects.isNull;
 
-@Mojo(name="install-node-and-pnpm", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
-    /**
-     * Where to download pnpm binary from. Defaults to https://registry.npmjs.org/pnpm/-/
-     */
-    @Parameter(property = "pnpmDownloadRoot", required = false)
-    private String pnpmDownloadRoot;
+@Mojo(name="install-node-and-npm", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
+public final class NodeAndNpmMojo extends AbstractNodeMojo {
 
     /**
-     * Where to download Node.js and pnpm binaries from.
+     * Where to download NPM binary from. Defaults to https://registry.npmjs.org/npm/-/
+     */
+    @Parameter(property = "npmDownloadRoot", required = false)
+    private String npmDownloadRoot;
+
+    /**
+     * Where to download Node.js and NPM binaries from.
      *
-     * @deprecated use {@link #nodeDownloadRoot} and {@link #pnpmDownloadRoot} instead, this configuration will be used only when no {@link #nodeDownloadRoot} or {@link #pnpmDownloadRoot} is specified.
+     * @deprecated use {@link AbstractNodeMojo#nodeDownloadRoot} and {@link #npmDownloadRoot} instead, this configuration will be used only when no {@link AbstractNodeMojo#nodeDownloadRoot} or {@link #npmDownloadRoot} is specified.
      */
     @Parameter(property = "downloadRoot", required = false, defaultValue = "")
     @Deprecated
     private String downloadRoot;
 
     /**
-     * The version of pnpm to install. Note that the version string can optionally be prefixed with
-     * 'v' (i.e., both 'v1.2.3' and '1.2.3' are valid).
+     * The version of NPM to install.
      */
-    @Parameter(property = "pnpmVersion", required = true)
-    private String pnpmVersion;
+    @Parameter(property = "npmVersion", required = false, defaultValue = "provided")
+    private String npmVersion;
 
     /**
      * Server Id for download username and password
@@ -70,7 +71,7 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
     /**
      * Skips execution of this mojo.
      */
-    @Parameter(property = "skip.installnodepnpm", defaultValue = "${skip.installnodepnpm}")
+    @Parameter(property = "skip.installnodenpm", defaultValue = "${skip.installnodenpm}")
     private boolean skip;
 
     @Component(role = SettingsDecrypter.class)
@@ -85,35 +86,19 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
     }
 
     @Override
-    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory) throws Exception {
+    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String validNodeVersion) throws Exception {
         boolean pacAttemptFailed = false;
         boolean triedToUsePac = false;
         boolean failed = false;
         Timer timer = new Timer();
 
-        String nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
-
-        if (isNull(nodeVersion)) {
-            throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
-        }
-
-        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
-            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
-        }
-
-        String validNodeVersion = getDownloadableVersion(nodeVersion);
-        // Use different names to avoid confusion with fields `nodeDownloadRoot` and
-        // `pnpmDownloadRoot`.
-        //
-        // TODO: Remove the `downloadRoot` config (with breaking change) to simplify download root
-        // resolution.
-        String resolvedNodeDownloadRoot = getNodeDownloadRoot();
-        String resolvedPnpmDownloadRoot = getPnpmDownloadRoot();
+        final String nodeDownloadRoot = getNodeDownloadRoot();
+        final String npmDownloadRoot = getNpmDownloadRoot();
 
         try {
             if (isAtlassianProject(project) &&
                     isBlank(serverId) &&
-                    (isBlank(resolvedNodeDownloadRoot) || isBlank(resolvedPnpmDownloadRoot))
+                    (isBlank(nodeDownloadRoot) || isBlank(npmDownloadRoot))
             ) { // If they're overridden the settings, they be the boss
                 triedToUsePac = true;
 
@@ -121,9 +106,10 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
 
                 serverId = "maven-atlassian-com";
                 try {
+                    logger.debug("XXX valid node version {}", validNodeVersion);
                     install(factory, validNodeVersion,
-                            isBlank(resolvedNodeDownloadRoot) ? ATLASSIAN_NODE_DOWNLOAD_ROOT : resolvedNodeDownloadRoot,
-                            isBlank(resolvedPnpmDownloadRoot) ? ATLASSIAN_NPM_DOWNLOAD_ROOT : resolvedPnpmDownloadRoot);
+                            isBlank(nodeDownloadRoot) ? ATLASSIAN_NODE_DOWNLOAD_ROOT : nodeDownloadRoot,
+                            isBlank(npmDownloadRoot) ? ATLASSIAN_NPM_DOWNLOAD_ROOT : npmDownloadRoot);
                     return;
                 } catch (InstallationException exception) {
                     // Ignore as many filesystem exceptions unrelated to the mirror easily
@@ -139,7 +125,7 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
                 }
             }
 
-            install(factory, validNodeVersion, resolvedNodeDownloadRoot, resolvedPnpmDownloadRoot);
+            install(factory, validNodeVersion, nodeDownloadRoot, npmDownloadRoot);
         } catch (Exception exception) {
             failed = true;
             throw exception;
@@ -154,11 +140,11 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
                     getFrontendMavenPluginVersion(),
                     formatNodeVersionForMetric(validNodeVersion),
                     new HashMap<String, String>() {{
-                        put("installation", "pnpm");
+                        put("installation", "npm");
                         put("installation-work-runtime", runtimeWork.toString());
                         put("installation-work-package-manager", packageManagerWork.toString());
-                        put("runtime-host", getHostForMetric(resolvedPnpmDownloadRoot, NODEJS_ORG, finalTriedToUsePac, finalPacAttemptFailed));
-                        put("package-manager-host", getHostForMetric(resolvedPnpmDownloadRoot, DEFAULT_PNPM_DOWNLOAD_ROOT, finalTriedToUsePac, finalPacAttemptFailed));
+                        put("runtime-host", getHostForMetric(nodeDownloadRoot, NODEJS_ORG, finalTriedToUsePac, finalPacAttemptFailed));
+                        put("package-manager-host", getHostForMetric(npmDownloadRoot, DEFAULT_NPM_DOWNLOAD_ROOT, finalTriedToUsePac, finalPacAttemptFailed));
                         put("failed", Boolean.toString(finalFailed));
                         put("pac-attempted-failed", Boolean.toString(finalPacAttemptFailed));
                         put("tried-to-use-pac", Boolean.toString(finalTriedToUsePac));
@@ -166,7 +152,7 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
         }
     }
 
-    private void install(FrontendPluginFactory factory, String validNodeVersion, String resolvedNodeDownloadRoot, String resolvedPnpmDownloadRoot) throws InstallationException {
+    private void install(FrontendPluginFactory factory, String validNodeVersion, String nodeDownloadRoot, String npmDownloadRoot) throws InstallationException {
         ProxyConfig proxyConfig = MojoUtils.getProxyConfig(session, decrypter);
         Server server = MojoUtils.decryptServer(serverId, session, decrypter);
 
@@ -174,16 +160,18 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
             Map<String, String> httpHeaders = getHttpHeaders(server);
             runtimeWork =
             factory.getNodeInstaller(proxyConfig)
-                .setNodeVersion(nodeVersion)
-                .setNodeDownloadRoot(resolvedNodeDownloadRoot)
+                .setNodeVersion(validNodeVersion)
+                .setNodeDownloadRoot(nodeDownloadRoot)
+                .setNpmVersion(npmVersion)
                 .setUserName(server.getUsername())
                 .setPassword(server.getPassword())
                 .setHttpHeaders(httpHeaders)
                 .install();
             packageManagerWork =
-            factory.getPnpmInstaller(proxyConfig)
-                .setPnpmVersion(pnpmVersion)
-                .setPnpmDownloadRoot(resolvedPnpmDownloadRoot)
+            factory.getNPMInstaller(proxyConfig)
+                .setNodeVersion(validNodeVersion)
+                .setNpmVersion(npmVersion)
+                .setNpmDownloadRoot(npmDownloadRoot)
                 .setUserName(server.getUsername())
                 .setPassword(server.getPassword())
                 .setHttpHeaders(httpHeaders)
@@ -191,13 +179,15 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
         } else {
             runtimeWork =
             factory.getNodeInstaller(proxyConfig)
-                .setNodeVersion(nodeVersion)
-                .setNodeDownloadRoot(resolvedNodeDownloadRoot)
+                .setNodeVersion(validNodeVersion)
+                .setNodeDownloadRoot(nodeDownloadRoot)
+                .setNpmVersion(npmVersion)
                 .install();
             packageManagerWork =
-            factory.getPnpmInstaller(proxyConfig)
-                .setPnpmVersion(this.pnpmVersion)
-                .setPnpmDownloadRoot(resolvedPnpmDownloadRoot)
+            factory.getNPMInstaller(proxyConfig)
+                .setNodeVersion(validNodeVersion)
+                .setNpmVersion(npmVersion)
+                .setNpmDownloadRoot(npmDownloadRoot)
                 .install();
         }
     }
@@ -209,10 +199,10 @@ public final class InstallNodeAndPnpmMojo extends AbstractInstallNodeMojo {
         return nodeDownloadRoot;
     }
 
-    private String getPnpmDownloadRoot() {
-        if (downloadRoot != null && !"".equals(downloadRoot) && PnpmInstaller.DEFAULT_PNPM_DOWNLOAD_ROOT.equals(pnpmDownloadRoot)) {
+    private String getNpmDownloadRoot() {
+        if (downloadRoot != null && !"".equals(downloadRoot) && NPMInstaller.DEFAULT_NPM_DOWNLOAD_ROOT.equals(npmDownloadRoot)) {
             return downloadRoot;
         }
-        return pnpmDownloadRoot;
+        return npmDownloadRoot;
     }
 }

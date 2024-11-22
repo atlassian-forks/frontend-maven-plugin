@@ -6,7 +6,6 @@ public class VersionManagerCache {
 
     private VersionManagerType versionManagerType;
 
-    private boolean isVersionManagerInstalled = false;
     private File nodeExecutable;
     private File npmExecutable;
 
@@ -26,14 +25,6 @@ public class VersionManagerCache {
         return versionManagerType != null;
     }
 
-    public boolean isVersionManagerInstalled() {
-        return isVersionManagerInstalled;
-    }
-
-    public void setVersionManagerInstalled(boolean versionManagerInstalled) {
-        this.isVersionManagerInstalled = versionManagerInstalled;
-    }
-
     public File getNodeExecutable() {
         return nodeExecutable;
     }
@@ -48,5 +39,10 @@ public class VersionManagerCache {
 
     public void setNpmExecutable(File npmExecutable) {
         this.npmExecutable = npmExecutable;
+    }
+
+    public boolean isNodeAvailable() {
+        File nodeExecutable = getNodeExecutable();
+        return nodeExecutable != null && nodeExecutable.exists();
     }
 }

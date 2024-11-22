@@ -14,8 +14,6 @@ public class NvmClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
     final CommandExecutor commandExecutor;
 
-    private static final String EXECUTABLE = "nvm";
-
     public NvmClient(CommandExecutor commandExecutor) {
         this.commandExecutor = commandExecutor;
     }
@@ -28,37 +26,15 @@ public class NvmClient implements VersionManagerClient {
     }
 
     @Override
-    public void installNode() {
-        commandExecutor
-            .withShell()
-            .withSourced(getNvmScript())
-            .executeOrFail(Arrays.asList(
-                EXECUTABLE, "install"
-            ));
-    }
-
-    @Override
-    public File getNodeExecutable() {
-        String nodePath = commandExecutor
-            .withShell()
-            .withSourced(getNvmScript())
-            .executeOrFail(Arrays.asList(
-                EXECUTABLE, "which", "node"
-            ));
+    public File getNodeExecutable(String nodeVersion) {
+        String nodePath = ""; // TODO
         return new File(nodePath);
     }
 
     @Override
-    public File getNpmExecutable() {
-        File nodeExec = getNodeExecutable();
+    public File getNpmExecutable(String nodeVersion) {
+        File nodeExec = getNodeExecutable(nodeVersion);
         return new File(nodeExec.getParent(), "npm");
-    }
-
-    private String getNvmScript() {
-        String nvmDir = getNvmDir();
-        String nvmScript = Paths.get(nvmDir, "nvm.sh").toString();
-
-        return nvmScript;
     }
 
     private String getNvmDir() {

@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.getDownloadableVersion;
 import static java.util.Objects.isNull;
 
-public abstract class AbstractInstallNodeMojo extends AbstractFrontendMojo {
+public abstract class AbstractNodeMojo extends AbstractFrontendMojo {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractInstallNodeMojo.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractNodeMojo.class);
 
     /**
      * Where to download Node.js binary from. Defaults to https://nodejs.org/dist/
@@ -34,15 +34,19 @@ public abstract class AbstractInstallNodeMojo extends AbstractFrontendMojo {
     @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
     protected String nodeVersionFile;
 
+    protected String verifiedNodeVersion;
+
     @Override
     protected void execute(FrontendPluginFactory factory) throws Exception {
-        verifyAndResolveNodeVersion(factory);
-        executeWithVerifiedNodeVersion(factory);
+        String nodeVersion = verifyAndResolveNodeVersion(factory);
+        logger.debug("XXX load node version manager {}", nodeVersion);
+        factory.loadNodeVersionManager(nodeVersion);
+        executeWithVerifiedNodeVersion(factory, nodeVersion);
     }
 
-    protected abstract void executeWithVerifiedNodeVersion(FrontendPluginFactory factory) throws Exception;
+    protected abstract void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String nodeVersion) throws Exception;
 
-    private void verifyAndResolveNodeVersion(FrontendPluginFactory factory) throws Exception {
+    private String verifyAndResolveNodeVersion(FrontendPluginFactory factory) throws Exception {
         if (factory.isVersionManagerAvailable()) {
             if (this.nodeVersion != null && !this.nodeVersion.isEmpty()) {
                 logger.warn("`nodeVersion` has been configured to {} but will be ignored when installing with node version manager." +
@@ -63,6 +67,6 @@ public abstract class AbstractInstallNodeMojo extends AbstractFrontendMojo {
         String validNodeVersion = getDownloadableVersion(nodeVersion);
         logger.info("Resolved Node version: {}", validNodeVersion);
 
-        this.nodeVersion = validNodeVersion;
+        return validNodeVersion;
     }
 }

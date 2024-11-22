@@ -4,6 +4,7 @@ import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionMan
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerRunner;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerType;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerLocator;
+import jdk.nashorn.internal.objects.Global;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,7 @@ public final class FrontendPluginFactory {
     private final File installDirectory;
     private final CacheResolver cacheResolver;
     private final boolean useNodeVersionManager;
+    private String nodeVersion;
 
     public FrontendPluginFactory(File workingDirectory, File installDirectory){
         this(workingDirectory, installDirectory, getDefaultCacheResolver(installDirectory));
@@ -130,7 +132,7 @@ public final class FrontendPluginFactory {
         return GlobalCache.getVersionManagerCache();
     }
 
-    private static final CacheResolver getDefaultCacheResolver(File root) {
+    private static CacheResolver getDefaultCacheResolver(File root) {
         return new DirectoryCacheResolver(new File(root, DEFAULT_CACHE_PATH));
     }
 
@@ -158,11 +160,11 @@ public final class FrontendPluginFactory {
         return versionManagerType;
     }
 
-    public void loadVersionManager() {
+    public void loadNodeVersionManager(String nodeVersion) {
         if (getInstallConfig().isUseNodeVersionManager()) {
             VersionManagerType versionManagerType = getVersionManagerType(getInstallConfig());
             if (versionManagerType != null) {
-                getVersionManagerRunner().populateCache();
+                getVersionManagerRunner().populateCacheForVersion(nodeVersion);
             }
         }
     }

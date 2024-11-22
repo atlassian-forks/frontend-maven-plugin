@@ -103,15 +103,6 @@ public class NodeInstaller {
                 this.nodeDownloadRoot = this.installConfig.getPlatform().getNodeDownloadRoot();
             }
 
-            // try to install with node version manager
-            if (this.versionManagerCache.isVersionManagerAvailable()) {
-                VersionManagerRunner versionManagerRunner = new VersionManagerRunner(installConfig, versionManagerCache);
-                versionManagerRunner.installNodeAndUpdateCaches();
-                return work;
-            } else {
-                this.logger.warn("Node version manager is not available, falling back to standard node installation.");
-            }
-
             // try to install the standard way
             if (!nodeIsAlreadyInstalled()) {
                 this.logger.info("Installing node version {}", this.nodeVersion);
@@ -139,6 +130,7 @@ public class NodeInstaller {
         try {
             NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.installConfig, versionManagerCache);
             File nodeFile = executorConfig.getNodePath();
+            this.logger.debug("XXX Node file {}", nodeFile);
             if (nodeFile.exists()) {
                 final String version =
                     new NodeExecutor(executorConfig, Arrays.asList("--version"), null).executeAndGetResult(logger);
@@ -359,7 +351,8 @@ public class NodeInstaller {
     }
 
     private File getInstallDirectory() {
-        File installDirectory = new File(this.installConfig.getInstallDirectory(), INSTALL_PATH);
+        File installDirectory= new File(this.installConfig.getInstallDirectory(), INSTALL_PATH);
+
         if (!installDirectory.exists()) {
             this.logger.debug("Creating install directory {}", installDirectory);
             installDirectory.mkdirs();

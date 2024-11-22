@@ -1,6 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.mojo;
 
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -16,7 +17,7 @@ import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetrics
 import static com.github.eirslett.maven.plugins.frontend.mojo.MojoUtils.incrementalBuildEnabled;
 
 @Mojo(name="webpack", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class WebpackMojo extends AbstractFrontendMojo {
+public final class WebpackMojo extends AbstractNodeMojo {
 
     /**
      * Webpack arguments. Default is empty (runs just the "webpack" command).
@@ -62,14 +63,13 @@ public final class WebpackMojo extends AbstractFrontendMojo {
     }
 
     @Override
-    public synchronized void execute(FrontendPluginFactory factory) throws Exception {
+    public synchronized void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String nodeVersion) throws Exception {
         boolean incrementalEnabled = incrementalBuildEnabled(buildContext);
         boolean shouldExecute = shouldExecute();
 
         incrementExecutionCount(project.getArtifactId(), arguments, WEBPACK, getFrontendMavenPluginVersion(), incrementalEnabled, !shouldExecute, () -> {
 
         if (shouldExecute) {
-            factory.loadVersionManager();
             factory.getWebpackRunner().execute(arguments, environmentVariables);
 
             if (outputdir != null) {

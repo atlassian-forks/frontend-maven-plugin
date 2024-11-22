@@ -1,6 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.mojo;
 
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.Component;
@@ -18,7 +19,7 @@ import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetrics
 import static com.github.eirslett.maven.plugins.frontend.mojo.MojoUtils.incrementalBuildEnabled;
 
 @Mojo(name="npm",  defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class NpmMojo extends AbstractFrontendMojo {
+public final class NpmMojo extends AbstractNodeMojo {
 
     private static final String NPM_REGISTRY_URL = "npmRegistryURL";
 
@@ -40,6 +41,20 @@ public final class NpmMojo extends AbstractFrontendMojo {
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
+    // TODO extract to abstract Node env mojo
+    /**
+     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
+     * If using with node version manager (enabled by default), nodeVersion parameter will be ignored
+     */
+    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
+    private String nodeVersion;
+
+    /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
+    private String nodeVersionFile;
+
     @Component
     private BuildContext buildContext;
 
@@ -58,7 +73,7 @@ public final class NpmMojo extends AbstractFrontendMojo {
     }
 
     @Override
-    public synchronized void execute(FrontendPluginFactory factory) throws Exception {
+    public synchronized void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String nodeVersion) throws Exception {
         File packageJson = new File(workingDirectory, "package.json");
 
         boolean incrementalEnabled = incrementalBuildEnabled(buildContext);
@@ -68,7 +83,9 @@ public final class NpmMojo extends AbstractFrontendMojo {
 
         if (!willBeIncremental) {
             ProxyConfig proxyConfig = getProxyConfig();
-            factory.loadVersionManager();
+
+            this.nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
+
             factory.getNpmRunner(proxyConfig, getRegistryUrl()).execute(arguments, environmentVariables);
         } else {
             getLog().info("Skipping npm install as package.json unchanged");

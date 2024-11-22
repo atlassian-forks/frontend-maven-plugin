@@ -55,6 +55,7 @@ final class DefaultInstallConfig implements InstallConfig {
     return this.platform;
   }
 
+  @Override
   public boolean isUseNodeVersionManager() {
     return useNodeVersionManager;
   }
