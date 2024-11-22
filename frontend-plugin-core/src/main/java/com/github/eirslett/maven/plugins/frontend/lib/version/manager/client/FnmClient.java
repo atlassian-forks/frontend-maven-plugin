@@ -30,7 +30,6 @@ public class FnmClient implements VersionManagerClient {
     @Override
     public File getNodeExecutable(String nodeVersion) {
         String fnmDir = getFnmDir();
-
         return Paths.get(fnmDir, "node-versions", nodeVersion, "installation", "bin", "node").toFile();
     }
 

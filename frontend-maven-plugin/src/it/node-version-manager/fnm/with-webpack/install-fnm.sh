@@ -8,8 +8,5 @@ mkdir "$FNM_DIR"
 
 curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_DIR" --skip-shell --force-install
 
-export DEFAULT_NODE_VERSION=20.15.1
 eval "$(fnm env)" \
-        && fnm install $DEFAULT_NODE_VERSION \
-        && fnm alias default $DEFAULT_NODE_VERSION \
-        && fnm use default
+        && fnm install 20.15.1

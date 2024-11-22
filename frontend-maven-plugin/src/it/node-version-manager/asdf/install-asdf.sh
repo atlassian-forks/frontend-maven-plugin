@@ -10,4 +10,6 @@ echo "ASDF_DIR set: $ASDF_DIR";
 git clone https://github.com/asdf-vm/asdf.git "$ASDF_DIR" --branch v0.14.1
 echo "ASDF checked out";
 
-
+. "$HOME/.asdf/asdf.sh" \
+  && asdf plugin add nodejs \
+  && asdf install nodejs v20.15.1

@@ -27,8 +27,8 @@ public class AsdfClient implements VersionManagerClient {
 
     @Override
     public File getNodeExecutable(String nodeVersion) {
-        String nodePath = ""; // TODO
-        return new File(nodePath);
+        String asdfDir = getAsdfDir();
+        return Paths.get(asdfDir, "installs", "nodejs", nodeVersion, "bin", "node").toFile();
     }
 
     @Override
