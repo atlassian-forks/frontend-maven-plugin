@@ -130,7 +130,6 @@ public class NodeInstaller {
         try {
             NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.installConfig, versionManagerCache);
             File nodeFile = executorConfig.getNodePath();
-            this.logger.debug("XXX Node file {}", nodeFile);
             if (nodeFile.exists()) {
                 final String version =
                     new NodeExecutor(executorConfig, Arrays.asList("--version"), null).executeAndGetResult(logger);

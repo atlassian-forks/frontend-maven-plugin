@@ -106,7 +106,6 @@ public final class NodeAndNpmMojo extends AbstractNodeMojo {
 
                 serverId = "maven-atlassian-com";
                 try {
-                    logger.debug("XXX valid node version {}", validNodeVersion);
                     install(factory, validNodeVersion,
                             isBlank(nodeDownloadRoot) ? ATLASSIAN_NODE_DOWNLOAD_ROOT : nodeDownloadRoot,
                             isBlank(npmDownloadRoot) ? ATLASSIAN_NPM_DOWNLOAD_ROOT : npmDownloadRoot);

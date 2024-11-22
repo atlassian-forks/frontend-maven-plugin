@@ -39,7 +39,6 @@ public abstract class AbstractNodeMojo extends AbstractFrontendMojo {
     @Override
     protected void execute(FrontendPluginFactory factory) throws Exception {
         String nodeVersion = verifyAndResolveNodeVersion(factory);
-        logger.debug("XXX load node version manager {}", nodeVersion);
         factory.loadNodeVersionManager(nodeVersion);
         executeWithVerifiedNodeVersion(factory, nodeVersion);
     }
