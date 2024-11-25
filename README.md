@@ -54,14 +54,7 @@ Only Atlassians may release a new version, [follow this guide](https://hello.atl
 
 ### Using Node Version Manager
 
-By default, node based goals will try to use one of supported node version managers (`fnm`, `mise`, `asdf`, `nvm`, `nvs`) to install node and to find npm. You can disable node version manager usage with `useNodeVersionManager` configuration property.
-
-If you're using `fnm`, make sure to have `--version-file-strategy=recursive` enabled in your shell profile file so that fnm can find node version files in higher levels of the project.
-
-#### Known limitations
-
-1. Windows platform is not supported as of this moment.
-2. Bitbucket pipelines hijack /bin/bash stdout and so internal commands needed to determine whether node version manager is available or not don't work.
+By default, node based goals will try to use a node available from one of supported node version managers (`fnm`, `mise`, `asdf`, `nvm`, `nvs`). If a given node version is not available `frontend-maven-plugin` will fallback to standard installation. You can disable this behaviour with `useNodeVersionManager` configuration property.
 
 ### Format of the Node version
 

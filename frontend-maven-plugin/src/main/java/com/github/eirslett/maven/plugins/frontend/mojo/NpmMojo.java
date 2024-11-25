@@ -70,8 +70,6 @@ public final class NpmMojo extends AbstractNodeMojo {
             if (!willBeIncremental) {
                 ProxyConfig proxyConfig = getProxyConfig();
 
-                this.nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
-
                 factory.getNpmRunner(proxyConfig, getRegistryUrl()).execute(arguments, environmentVariables);
             } else {
                 getLog().info("Skipping npm install as package.json unchanged");

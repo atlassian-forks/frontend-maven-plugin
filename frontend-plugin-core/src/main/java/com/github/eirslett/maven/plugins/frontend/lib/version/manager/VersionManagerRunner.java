@@ -28,7 +28,6 @@ public class VersionManagerRunner {
     }
 
     public void populateCacheForVersion(String nodeVersion) {
-        if (!installConfig.isUseNodeVersionManager()) return;
         logger.debug("Populating version manager cache for node: {}", nodeVersion);
 
         this.versionManagerCache.setNodeExecutable(versionManagerClient.getNodeExecutable(nodeVersion));
