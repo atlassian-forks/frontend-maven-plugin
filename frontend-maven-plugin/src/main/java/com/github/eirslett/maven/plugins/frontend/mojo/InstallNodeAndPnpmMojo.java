@@ -8,7 +8,6 @@ import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
 import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
-import com.github.eirslett.maven.plugins.frontend.lib.PnpmInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -121,6 +120,7 @@ public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
         }
 
         String validNodeVersion = getDownloadableVersion(nodeVersion);
+        factory.loadNodeVersionManager(validNodeVersion);
 
         // Use different names to avoid confusion with fields `nodeDownloadRoot` and
         // `pnpmDownloadRoot`.

@@ -114,6 +114,7 @@ public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
         }
 
         String validNodeVersion = getDownloadableVersion(nodeVersion);
+        factory.loadNodeVersionManager(validNodeVersion);
 
         boolean isYarnYamlFilePresent = isYarnrcYamlFilePresent(this.session, this.workingDirectory);
 

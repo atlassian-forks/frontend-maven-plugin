@@ -68,7 +68,7 @@ enum OS { Windows, Mac, Linux, SunOS, AIX;
     }
 }
 
-class Platform {
+public class Platform {
 
     /**
      * Node.js supports Apple silicon since v16
@@ -143,6 +143,10 @@ class Platform {
 
     public boolean isMac(){
         return os == OS.Mac;
+    }
+
+    public String getArchitectureName() {
+        return architecture.name();
     }
 
     public String getLongNodeFilename(String nodeVersion, boolean archiveOnWindows) {

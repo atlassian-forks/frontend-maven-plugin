@@ -17,6 +17,7 @@
 
                 <configuration>
                     <installDirectory>target</installDirectory>
+                    <useNodeVersionManager>false</useNodeVersionManager>
                 </configuration>
 
                 <executions>

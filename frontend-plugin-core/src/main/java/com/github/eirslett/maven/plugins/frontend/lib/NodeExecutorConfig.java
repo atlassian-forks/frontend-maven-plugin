@@ -1,5 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.lib;
 
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
+
 import java.io.File;
 
 public interface NodeExecutorConfig {
@@ -27,18 +29,29 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
 
   private final InstallConfig installConfig;
 
+  private final VersionManagerCache versionManagerCache;
+
   public InstallNodeExecutorConfig(InstallConfig installConfig) {
+    this(installConfig, null);
+  }
+
+  public InstallNodeExecutorConfig(InstallConfig installConfig, VersionManagerCache versionManagerCache) {
     this.installConfig = installConfig;
+    this.versionManagerCache = versionManagerCache;
   }
 
   @Override
   public File getNodePath() {
+    if (versionManagerCache != null && versionManagerCache.isNodeAvailable()) return versionManagerCache.getNodeExecutable();
+
     String nodeExecutable = getPlatform().isWindows() ? NODE_WINDOWS : NODE_DEFAULT;
     return new File(installConfig.getInstallDirectory() + nodeExecutable);
   }
 
   @Override
   public File getNpmPath() {
+    if (versionManagerCache != null && versionManagerCache.isNodeAvailable()) return versionManagerCache.getNpmExecutable();
+
     return new File(installConfig.getInstallDirectory() + Utils.normalize(NPM));
   }
 

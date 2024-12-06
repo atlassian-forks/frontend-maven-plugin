@@ -1,6 +1,9 @@
 package com.github.eirslett.maven.plugins.frontend.mojo;
 
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -13,7 +16,10 @@ import java.util.List;
 
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporter.Goal.WEBPACK;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporter.incrementExecutionCount;
+import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector.getNodeVersion;
+import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.getDownloadableVersion;
 import static com.github.eirslett.maven.plugins.frontend.mojo.MojoUtils.incrementalBuildEnabled;
+import static java.util.Objects.isNull;
 
 @Mojo(name="webpack", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
 public final class WebpackMojo extends AbstractFrontendMojo {
@@ -48,6 +54,19 @@ public final class WebpackMojo extends AbstractFrontendMojo {
     private File outputdir;
 
     /**
+     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example
+     * 'v0.10.18'
+     */
+    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
+    private String nodeVersion;
+
+    /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
+    private String nodeVersionFile;
+
+    /**
      * Skips execution of this mojo.
      */
     @Parameter(property = "skip.webpack", defaultValue = "${skip.webpack}")
@@ -65,6 +84,19 @@ public final class WebpackMojo extends AbstractFrontendMojo {
     public synchronized void execute(FrontendPluginFactory factory) throws Exception {
         boolean incrementalEnabled = incrementalBuildEnabled(buildContext);
         boolean shouldExecute = shouldExecute();
+
+        String nodeVersion = getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
+
+        if (isNull(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
+        }
+
+        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
+        }
+
+        String validNodeVersion = getDownloadableVersion(nodeVersion);
+        factory.loadNodeVersionManager(validNodeVersion);
 
         incrementExecutionCount(project.getArtifactId(), arguments, WEBPACK, getFrontendMavenPluginVersion(), incrementalEnabled, !shouldExecute, () -> {
 
