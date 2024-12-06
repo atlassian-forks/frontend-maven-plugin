@@ -19,7 +19,7 @@ public class MiseClient implements VersionManagerClient {
 
     @Override
     public boolean isInstalled() {
-        String miseBinDir = getMiseBinDir();
+        String miseBinDir = getMiseDir();
         logger.debug("Checking if MISE installation directory exists: {}", miseBinDir);
 
         return miseBinDir != null;
@@ -27,7 +27,7 @@ public class MiseClient implements VersionManagerClient {
 
     @Override
     public File getNodeExecutable(String nodeVersion) {
-        String miseNodeDir = getMiseNodeDir();
+        String miseNodeDir = getMiseDir();
         if (miseNodeDir == null) return null;
 
         String cleanNodeVersion = nodeVersion.replace("v", "");
@@ -40,32 +40,28 @@ public class MiseClient implements VersionManagerClient {
         return Paths.get(nodeExec.getParentFile().getParent(), "/lib/node_modules/npm/bin/npm-cli.js").toFile();
     }
 
-    private String getMiseNodeDir() {
-        String home = System.getenv("HOME");
-        if (home != null) {
-            Path path = Paths.get(home, ".local", "share", "mise", "installs", "node");
+    private String getMiseDir() {
+        String miseDataDir = System.getenv("MISE_DATA_DIR");
+        if (miseDataDir != null) {
+            Path path = Paths.get(miseDataDir, "installs", "node");
             if (Files.exists(path)) {
                 return path.toString();
             }
         }
 
-        return null;
-    }
-
-    private String getMiseBinDir() {
-        String miseInstallPath = System.getenv("MISE_INSTALL_PATH");
-        if (miseInstallPath != null) {
-            Path path = Paths.get(miseInstallPath);
+        String xdgDataDir = System.getenv("XDG_DATA_HOME");
+        if (miseDataDir != null) {
+            Path path = Paths.get(xdgDataDir, "mise", "installs", "node");
             if (Files.exists(path)) {
-                return path.getParent().toString();
+                return path.toString();
             }
         }
 
         String home = System.getenv("HOME");
         if (home != null) {
-            Path path = Paths.get(home, ".local", "bin", "mise");
+            Path path = Paths.get(home, ".local", "share", "mise", "installs", "node");
             if (Files.exists(path)) {
-                return path.getParent().toString();
+                return path.toString();
             }
         }
 
