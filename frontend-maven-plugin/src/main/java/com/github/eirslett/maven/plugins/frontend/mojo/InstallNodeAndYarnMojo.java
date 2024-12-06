@@ -35,15 +35,34 @@ import static com.github.eirslett.maven.plugins.frontend.mojo.YarnUtils.isYarnrc
 import static java.util.Objects.isNull;
 
 @Mojo(name = "install-node-and-yarn", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class NodeAndYarnMojo extends AbstractNodeMojo {
+public final class InstallNodeAndYarnMojo extends AbstractFrontendMojo {
 
     private static final String YARNRC_YAML_FILE_NAME = ".yarnrc.yml";
+
+    /**
+     * Where to download Node.js binary from. Defaults to https://nodejs.org/dist/
+     */
+    @Parameter(property = "nodeDownloadRoot", required = false)
+    private String nodeDownloadRoot;
 
     /**
      * Where to download Yarn binary from. Defaults to https://github.com/yarnpkg/yarn/releases/download/...
      */
     @Parameter(property = "yarnDownloadRoot", required = false)
     private String yarnDownloadRoot;
+
+    /**
+     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example
+     * 'v0.10.18'
+     */
+    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
+    private String nodeVersion;
+
+    /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
+    private String nodeVersionFile;
 
     /**
      * The version of Yarn to install. IMPORTANT! Most Yarn names start with 'v', for example 'v0.15.0'.
@@ -78,11 +97,24 @@ public final class NodeAndYarnMojo extends AbstractNodeMojo {
     private AtlassianDevMetricsInstallationWork runtimeWork = UNKNOWN;
 
     @Override
-    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String validNodeVersion) throws Exception {
+    public void execute(FrontendPluginFactory factory) throws Exception {
         boolean pacAttemptFailed = false;
         boolean triedToUsePac = false;
         boolean failed = false;
         Timer timer = new Timer();
+
+        String nodeVersion = getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
+
+        if (isNull(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
+        }
+
+        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
+        }
+
+        String validNodeVersion = getDownloadableVersion(nodeVersion);
+        factory.loadNodeVersionManager(validNodeVersion);
 
         boolean isYarnYamlFilePresent = isYarnrcYamlFilePresent(this.session, this.workingDirectory);
 

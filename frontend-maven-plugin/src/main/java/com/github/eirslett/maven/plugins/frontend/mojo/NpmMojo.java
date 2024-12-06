@@ -3,10 +3,11 @@ package com.github.eirslett.maven.plugins.frontend.mojo;
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
 import com.github.eirslett.maven.plugins.frontend.lib.IncrementalBuildExecutionDigest.ExecutionCoordinates;
 import com.github.eirslett.maven.plugins.frontend.lib.IncrementalMojoHelper;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
 import com.github.eirslett.maven.plugins.frontend.lib.NpmRunner;
-import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -21,9 +22,12 @@ import java.util.Set;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporter.Goal.NPM;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporter.incrementExecutionCount;
 import static com.github.eirslett.maven.plugins.frontend.lib.IncrementalMojoHelper.DEFAULT_EXCLUDED_FILENAMES;
+import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector.getNodeVersion;
+import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.getDownloadableVersion;
+import static java.util.Objects.isNull;
 
 @Mojo(name="npm",  defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class NpmMojo extends AbstractNodeMojo {
+public final class NpmMojo extends AbstractFrontendMojo {
 
     private static final String NPM_REGISTRY_URL = "npmRegistryURL";
 
@@ -50,6 +54,19 @@ public final class NpmMojo extends AbstractNodeMojo {
 
     @Parameter(property = "session", defaultValue = "${session}", readonly = true)
     private MavenSession session;
+
+    /**
+     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example
+     * 'v0.10.18'
+     */
+    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
+    private String nodeVersion;
+
+    /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
+    private String nodeVersionFile;
 
     /**
      * Files that should be checked for changes for incremental builds in addition
@@ -84,8 +101,21 @@ public final class NpmMojo extends AbstractNodeMojo {
     }
 
     @Override
-    public synchronized void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String nodeVersion) throws Exception {
+    public synchronized void execute(FrontendPluginFactory factory) throws Exception {
         NpmRunner runner = factory.getNpmRunner(getProxyConfig(), getRegistryUrl());
+
+        String nodeVersion = getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
+
+        if (isNull(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
+        }
+
+        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
+        }
+
+        String validNodeVersion = getDownloadableVersion(nodeVersion);
+        factory.loadNodeVersionManager(validNodeVersion);
 
         ExecutionCoordinates coordinates = new ExecutionCoordinates(execution.getGoal(), execution.getExecutionId(), execution.getLifecyclePhase());
         IncrementalMojoHelper incrementalHelper = new IncrementalMojoHelper(frontendIncremental, coordinates, getTargetDir(), workingDirectory, triggerFiles, excludedFilenames);

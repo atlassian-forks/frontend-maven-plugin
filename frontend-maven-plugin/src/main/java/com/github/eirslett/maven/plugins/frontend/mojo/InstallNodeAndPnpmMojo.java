@@ -8,7 +8,6 @@ import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
 import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
-import com.github.eirslett.maven.plugins.frontend.lib.PnpmInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -35,7 +34,14 @@ import static com.github.eirslett.maven.plugins.frontend.mojo.AtlassianUtil.isAt
 import static java.util.Objects.isNull;
 
 @Mojo(name="install-node-and-pnpm", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class NodeAndPnpmMojo extends AbstractNodeMojo {
+public final class InstallNodeAndPnpmMojo extends AbstractFrontendMojo {
+
+    /**
+     * Where to download Node.js binary from. Defaults to https://nodejs.org/dist/
+     */
+    @Parameter(property = "nodeDownloadRoot", required = false)
+    private String nodeDownloadRoot;
+
     /**
      * Where to download pnpm binary from. Defaults to https://registry.npmjs.org/pnpm/-/
      */
@@ -50,6 +56,18 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
     @Parameter(property = "downloadRoot", required = false, defaultValue = "")
     @Deprecated
     private String downloadRoot;
+
+    /**
+     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
+     */
+    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
+    private String nodeVersion;
+
+    /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
+    private String nodeVersionFile;
 
     /**
      * The version of pnpm to install. Note that the version string can optionally be prefixed with
@@ -85,11 +103,24 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
     }
 
     @Override
-    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String validNodeVersion) throws Exception {
+    public void execute(FrontendPluginFactory factory) throws Exception {
         boolean pacAttemptFailed = false;
         boolean triedToUsePac = false;
         boolean failed = false;
         Timer timer = new Timer();
+
+        String nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
+
+        if (isNull(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
+        }
+
+        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
+        }
+
+        String validNodeVersion = getDownloadableVersion(nodeVersion);
+        factory.loadNodeVersionManager(validNodeVersion);
 
         // Use different names to avoid confusion with fields `nodeDownloadRoot` and
         // `pnpmDownloadRoot`.
@@ -167,7 +198,7 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
             Map<String, String> httpHeaders = getHttpHeaders(server);
             runtimeWork =
             factory.getNodeInstaller(proxyConfig)
-                .setNodeVersion(nodeVersion)
+                .setNodeVersion(validNodeVersion)
                 .setNodeDownloadRoot(resolvedNodeDownloadRoot)
                 .setUserName(server.getUsername())
                 .setPassword(server.getPassword())
@@ -184,7 +215,7 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
         } else {
             runtimeWork =
             factory.getNodeInstaller(proxyConfig)
-                .setNodeVersion(nodeVersion)
+                .setNodeVersion(validNodeVersion)
                 .setNodeDownloadRoot(resolvedNodeDownloadRoot)
                 .install();
             packageManagerWork =

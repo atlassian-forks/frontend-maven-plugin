@@ -6,7 +6,6 @@ import com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporte
 import com.github.eirslett.maven.plugins.frontend.lib.DownloadException;
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
 import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
-import com.github.eirslett.maven.plugins.frontend.lib.NPMInstaller;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector;
 import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
@@ -36,7 +35,13 @@ import static com.github.eirslett.maven.plugins.frontend.mojo.AtlassianUtil.isAt
 import static java.util.Objects.isNull;
 
 @Mojo(name="install-node-and-npm", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
-public final class NodeAndNpmMojo extends AbstractNodeMojo {
+public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
+
+    /**
+     * Where to download Node.js binary from. Defaults to https://nodejs.org/dist/
+     */
+    @Parameter(property = "nodeDownloadRoot", required = false)
+    private String nodeDownloadRoot;
 
     /**
      * Where to download NPM binary from. Defaults to https://registry.npmjs.org/npm/-/
@@ -47,11 +52,23 @@ public final class NodeAndNpmMojo extends AbstractNodeMojo {
     /**
      * Where to download Node.js and NPM binaries from.
      *
-     * @deprecated use {@link AbstractNodeMojo#nodeDownloadRoot} and {@link #npmDownloadRoot} instead, this configuration will be used only when no {@link AbstractNodeMojo#nodeDownloadRoot} or {@link #npmDownloadRoot} is specified.
+     * @deprecated use {@link #nodeDownloadRoot} and {@link #npmDownloadRoot} instead, this configuration will be used only when no {@link #nodeDownloadRoot} or {@link #npmDownloadRoot} is specified.
      */
     @Parameter(property = "downloadRoot", required = false, defaultValue = "")
     @Deprecated
     private String downloadRoot;
+
+    /**
+     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example 'v0.10.18'
+     */
+    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
+    private String nodeVersion;
+
+    /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
+    private String nodeVersionFile;
 
     /**
      * The version of NPM to install.
@@ -86,11 +103,23 @@ public final class NodeAndNpmMojo extends AbstractNodeMojo {
     }
 
     @Override
-    public void executeWithVerifiedNodeVersion(FrontendPluginFactory factory, String validNodeVersion) throws Exception {
+    public void execute(FrontendPluginFactory factory) throws Exception {
         boolean pacAttemptFailed = false;
         boolean triedToUsePac = false;
         boolean failed = false;
         Timer timer = new Timer();
+
+        String nodeVersion = NodeVersionDetector.getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
+
+        if (isNull(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
+        }
+
+        if (!NodeVersionHelper.validateVersion(nodeVersion)) {
+            throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
+        }
+
+        String validNodeVersion = getDownloadableVersion(nodeVersion);
 
         String nodeDownloadRoot = getNodeDownloadRoot();
         String npmDownloadRoot = getNpmDownloadRoot();
