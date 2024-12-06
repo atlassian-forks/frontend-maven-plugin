@@ -103,10 +103,6 @@ public class NPMInstaller {
                 this.npmDownloadRoot = DEFAULT_NPM_DOWNLOAD_ROOT;
             }
 
-            if (versionManagerCache.isNodeAvailable()){
-                // TODO maybe handle custom npm installation in the future
-                return PROVIDED;
-            }
 
             boolean npmProvided = npmProvided();
             if (npmProvided) work = PROVIDED;
