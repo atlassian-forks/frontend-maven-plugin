@@ -120,6 +120,7 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
         }
 
         String validNodeVersion = getDownloadableVersion(nodeVersion);
+        factory.loadNodeVersionManager(validNodeVersion);
 
         String nodeDownloadRoot = getNodeDownloadRoot();
         String npmDownloadRoot = getNpmDownloadRoot();

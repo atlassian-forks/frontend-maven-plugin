@@ -1,6 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager.client;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
+import com.github.eirslett.maven.plugins.frontend.lib.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +28,19 @@ public class FnmClient implements VersionManagerClient {
 
     @Override
     public File getNodeExecutable(String nodeVersion) {
+        String nodeVersionWithV = nodeVersion.startsWith("v") ? nodeVersion : String.format("v%s", nodeVersion);
+
         String fnmDir = getFnmDir();
-        return Paths.get(fnmDir, "node-versions", nodeVersion, "installation", "bin", "node").toFile();
+        Platform platform = installConfig.getPlatform();
+        String architecture = platform.getArchitectureName();
+        String osCodename = platform.getCodename();
+        String nodeOnPlatform = String.format("node-%s-%s-%s", nodeVersionWithV, osCodename, architecture);
+        Path path = Paths.get(fnmDir, "node-versions", nodeVersionWithV, nodeOnPlatform, "bin", "node");
+
+        if (Files.exists(path)) {
+            return path.toFile();
+        }
+        return Paths.get(fnmDir, "node-versions", nodeVersionWithV, "installation", "bin", "node").toFile();
     }
 
     @Override

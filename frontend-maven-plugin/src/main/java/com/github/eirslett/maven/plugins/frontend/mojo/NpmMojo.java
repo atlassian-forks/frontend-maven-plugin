@@ -102,8 +102,6 @@ public final class NpmMojo extends AbstractFrontendMojo {
 
     @Override
     public synchronized void execute(FrontendPluginFactory factory) throws Exception {
-        NpmRunner runner = factory.getNpmRunner(getProxyConfig(), getRegistryUrl());
-
         String nodeVersion = getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
 
         if (isNull(nodeVersion)) {
@@ -116,6 +114,8 @@ public final class NpmMojo extends AbstractFrontendMojo {
 
         String validNodeVersion = getDownloadableVersion(nodeVersion);
         factory.loadNodeVersionManager(validNodeVersion);
+
+        NpmRunner runner = factory.getNpmRunner(getProxyConfig(), getRegistryUrl());
 
         ExecutionCoordinates coordinates = new ExecutionCoordinates(execution.getGoal(), execution.getExecutionId(), execution.getLifecyclePhase());
         IncrementalMojoHelper incrementalHelper = new IncrementalMojoHelper(frontendIncremental, coordinates, getTargetDir(), workingDirectory, triggerFiles, excludedFilenames);

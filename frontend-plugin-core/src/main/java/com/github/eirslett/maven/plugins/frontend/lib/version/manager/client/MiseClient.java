@@ -19,10 +19,10 @@ public class MiseClient implements VersionManagerClient {
 
     @Override
     public boolean isInstalled() {
-        String miseBinDir = getMiseDir();
-        logger.debug("Checking if MISE installation directory exists: {}", miseBinDir);
+        String miseDir = getMiseDir();
+        logger.debug("Checking if MISE installation directory exists: {}", miseDir);
 
-        return miseBinDir != null;
+        return miseDir != null;
     }
 
     @Override
