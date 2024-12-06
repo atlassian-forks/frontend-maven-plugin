@@ -117,7 +117,7 @@ public final class NodeAndYarnMojo extends AbstractNodeMojo {
                     pacAttemptFailed = true;
                     getLog().warn("Oh no couldn't use the internal mirrors! Falling back to upstream mirrors");
                     getLog().debug("Using internal mirrors failed because: ", exception);
-                } finally {
+
                     nodeDownloadRoot = userSetNodeDownloadRoot;
                     yarnDownloadRoot = userSetYarnDownloadRoot;
                     serverId = null;

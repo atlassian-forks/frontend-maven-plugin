@@ -109,10 +109,10 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
                 getLog().info("Atlassian project detected, going to use the internal mirrors (requires VPN)");
 
                 serverId = "maven-atlassian-com";
+                resolvedNodeDownloadRoot = isBlank(resolvedNodeDownloadRoot) ? ATLASSIAN_NODE_DOWNLOAD_ROOT : resolvedNodeDownloadRoot;
+                resolvedPnpmDownloadRoot = isBlank(resolvedPnpmDownloadRoot) ? ATLASSIAN_NPM_DOWNLOAD_ROOT : resolvedPnpmDownloadRoot;
                 try {
-                    install(factory, validNodeVersion,
-                            isBlank(resolvedNodeDownloadRoot) ? ATLASSIAN_NODE_DOWNLOAD_ROOT : resolvedNodeDownloadRoot,
-                            isBlank(resolvedPnpmDownloadRoot) ? ATLASSIAN_NPM_DOWNLOAD_ROOT : resolvedPnpmDownloadRoot);
+                    install(factory, validNodeVersion, resolvedNodeDownloadRoot, resolvedPnpmDownloadRoot);
                     return;
                 } catch (InstallationException exception) {
                     // Ignore as many filesystem exceptions unrelated to the mirror easily
@@ -123,7 +123,9 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
                     pacAttemptFailed = true;
                     getLog().warn("Oh no couldn't use the internal mirrors! Falling back to upstream mirrors");
                     getLog().debug("Using internal mirrors failed because: ", exception);
-                } finally {
+
+                    resolvedNodeDownloadRoot = getNodeDownloadRoot();
+                    resolvedPnpmDownloadRoot = getPnpmDownloadRoot();
                     serverId = null;
                 }
             }
@@ -137,6 +139,8 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
             boolean finalFailed = failed;
             boolean finalPacAttemptFailed = pacAttemptFailed;
             boolean finalTriedToUsePac = triedToUsePac;
+            String finalResolvedPnpmDownloadRoot = resolvedPnpmDownloadRoot;
+            String finalResolvedNodeDownloadRoot = resolvedNodeDownloadRoot;
             timer.stop(
                     "runtime.download",
                     project.getArtifactId(),
@@ -146,8 +150,8 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
                         put("installation", "pnpm");
                         put("installation-work-runtime", runtimeWork.toString());
                         put("installation-work-package-manager", packageManagerWork.toString());
-                        put("runtime-host", getHostForMetric(resolvedPnpmDownloadRoot, NODEJS_ORG, finalTriedToUsePac, finalPacAttemptFailed));
-                        put("package-manager-host", getHostForMetric(resolvedPnpmDownloadRoot, DEFAULT_PNPM_DOWNLOAD_ROOT, finalTriedToUsePac, finalPacAttemptFailed));
+                        put("runtime-host", getHostForMetric(finalResolvedNodeDownloadRoot, NODEJS_ORG, finalTriedToUsePac, finalPacAttemptFailed));
+                        put("package-manager-host", getHostForMetric(finalResolvedPnpmDownloadRoot, DEFAULT_PNPM_DOWNLOAD_ROOT, finalTriedToUsePac, finalPacAttemptFailed));
                         put("failed", Boolean.toString(finalFailed));
                         put("pac-attempted-failed", Boolean.toString(finalPacAttemptFailed));
                         put("tried-to-use-pac", Boolean.toString(finalTriedToUsePac));
@@ -199,7 +203,7 @@ public final class NodeAndPnpmMojo extends AbstractNodeMojo {
     }
 
     private String getPnpmDownloadRoot() {
-        if (downloadRoot != null && !"".equals(downloadRoot) && PnpmInstaller.DEFAULT_PNPM_DOWNLOAD_ROOT.equals(pnpmDownloadRoot)) {
+        if (downloadRoot != null && !"".equals(downloadRoot) && isBlank(pnpmDownloadRoot)) {
             return downloadRoot;
         }
         return pnpmDownloadRoot;

@@ -27,12 +27,12 @@ import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetrics
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsIncremental.NOT_ENABLED;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsIncremental.REBUILDING_SKIPPED;
 import static com.github.eirslett.maven.plugins.frontend.lib.Utils.isBlank;
-import static com.google.common.primitives.Ints.checkedCast;
 import static java.lang.Boolean.getBoolean;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
 import static java.time.Instant.now;
+import static java.util.Objects.isNull;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
@@ -141,8 +141,10 @@ public class AtlassianDevMetricsReporter  {
                                     : BUILT
                             : NOT_ENABLED;
 
+            boolean finalFailed = failed;
             incrementCount("execute", artifactId, forkVersion, new HashMap<String, String>() {{
                 put("goal", goal.toString());
+                put("failed", Boolean.toString(finalFailed));
                 put("script", getScriptFromArguments(arguments));
                 put("incremental", incremental.toString());
             }});
@@ -261,6 +263,10 @@ public class AtlassianDevMetricsReporter  {
      * perfect
      */
     static String getScriptFromArguments(String arguments) {
+        if (isNull(arguments)) {
+            arguments = "";
+        }
+
         if (arguments.contains("test") || arguments.contains("check") || arguments.contains("visreg") || arguments.contains("jest") || arguments.contains("storybook")) {
             return "test";
         }
