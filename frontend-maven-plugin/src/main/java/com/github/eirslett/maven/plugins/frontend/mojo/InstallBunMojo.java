@@ -45,6 +45,12 @@ public final class InstallBunMojo extends AbstractFrontendMojo {
     @Parameter(property = "skip.installbun", alias = "skip.installbun", defaultValue = "${skip.installbun}")
     private boolean skip;
 
+    /**
+     * Node Version Manager usage disabled for Bun execution
+     */
+    @Parameter(property = "useNodeVersionManager", readonly = true, defaultValue = "false")
+    private boolean useNodeVersionManager;
+
     @Component(role = SettingsDecrypter.class)
     private SettingsDecrypter decrypter;
 

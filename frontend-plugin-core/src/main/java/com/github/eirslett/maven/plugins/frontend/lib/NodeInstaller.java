@@ -13,6 +13,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
+
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.CACHED;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.DOWNLOADED;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.INSTALLED;
@@ -35,15 +37,18 @@ public class NodeInstaller {
 
     private final InstallConfig config;
 
+    private final VersionManagerCache versionManagerCache;
+
     private final ArchiveExtractor archiveExtractor;
 
     private final FileDownloader fileDownloader;
 
-    NodeInstaller(InstallConfig config, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
+    NodeInstaller(InstallConfig config, VersionManagerCache versionManagerCache, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
         this.logger = LoggerFactory.getLogger(getClass());
         this.config = config;
         this.archiveExtractor = archiveExtractor;
         this.fileDownloader = fileDownloader;
+        this.versionManagerCache = versionManagerCache;
     }
 
     public NodeInstaller setNodeVersion(String nodeVersion) {
@@ -97,8 +102,11 @@ public class NodeInstaller {
             if (this.nodeDownloadRoot == null || this.nodeDownloadRoot.isEmpty()) {
                 this.nodeDownloadRoot = this.config.getPlatform().getNodeDownloadRoot();
             }
+
+            // try to install the standard way
             if (!nodeIsAlreadyInstalled()) {
                 this.logger.info("Installing node version {}", this.nodeVersion);
+
                 if (!this.nodeVersion.startsWith("v")) {
                     this.logger.warn("Node version does not start with naming convention 'v'.");
                 }
@@ -120,7 +128,8 @@ public class NodeInstaller {
 
     private boolean nodeIsAlreadyInstalled() {
         try {
-            NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.config);
+            NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.config, versionManagerCache);
+
             File nodeFile = executorConfig.getNodePath();
             if (nodeFile.exists()) {
                 final String version =
@@ -130,6 +139,10 @@ public class NodeInstaller {
                     this.logger.info("Node {} is already installed.", version);
                     return true;
                 } else {
+                    if (executorConfig.hasProvidedNode()) {
+                        this.logger.warn("Provided node executable has version {}, but {} was requested in configuration. Node executable: {}", version, this.nodeVersion, executorConfig.getNodePath());
+                        return true;
+                    }
                     this.logger.info("Node {} was installed, but we need version {}", version,
                         this.nodeVersion);
                     return false;
@@ -342,7 +355,8 @@ public class NodeInstaller {
     }
 
     private File getInstallDirectory() {
-        File installDirectory = new File(this.config.getInstallDirectory(), INSTALL_PATH);
+        File installDirectory= new File(this.config.getInstallDirectory(), INSTALL_PATH);
+
         if (!installDirectory.exists()) {
             this.logger.debug("Creating install directory {}", installDirectory);
             installDirectory.mkdirs();

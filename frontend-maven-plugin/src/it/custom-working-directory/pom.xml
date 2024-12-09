@@ -17,6 +17,7 @@
 
                 <configuration>
                     <workingDirectory>src/main/frontend</workingDirectory>
+                    <useNodeVersionManager>false</useNodeVersionManager>
                 </configuration>
 
                 <executions>

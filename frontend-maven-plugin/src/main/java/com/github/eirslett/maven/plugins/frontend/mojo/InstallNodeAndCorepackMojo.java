@@ -115,6 +115,7 @@ public final class InstallNodeAndCorepackMojo extends AbstractFrontendMojo {
         }
 
         String validNodeVersion = getDownloadableVersion(nodeVersion);
+        factory.loadNodeVersionManager(validNodeVersion);
 
         try {
             if (isAtlassianProject(project) && isBlank(serverId) &&
