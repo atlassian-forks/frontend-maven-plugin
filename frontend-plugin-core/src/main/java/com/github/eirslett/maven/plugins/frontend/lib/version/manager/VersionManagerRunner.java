@@ -13,14 +13,11 @@ public class VersionManagerRunner {
 
     final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final InstallConfig installConfig;
-
     private final VersionManagerCache versionManagerCache;
 
     private final VersionManagerClient versionManagerClient;
 
     public VersionManagerRunner(InstallConfig installConfig, VersionManagerCache versionManagerCache) {
-        this.installConfig = installConfig;
         this.versionManagerCache = versionManagerCache;
 
         VersionManagerFactory versionManagerFactory = new VersionManagerFactory(installConfig);

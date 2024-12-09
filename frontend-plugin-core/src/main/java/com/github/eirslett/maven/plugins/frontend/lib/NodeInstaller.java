@@ -129,6 +129,7 @@ public class NodeInstaller {
     private boolean nodeIsAlreadyInstalled() {
         try {
             NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.config, versionManagerCache);
+
             File nodeFile = executorConfig.getNodePath();
             if (nodeFile.exists()) {
                 final String version =
@@ -138,6 +139,10 @@ public class NodeInstaller {
                     this.logger.info("Node {} is already installed.", version);
                     return true;
                 } else {
+                    if (executorConfig.hasProvidedNode()) {
+                        this.logger.warn("Provided node executable has version {}, but {} was requested in configuration. Node executable: {}", version, this.nodeVersion, executorConfig.getNodePath());
+                        return true;
+                    }
                     this.logger.info("Node {} was installed, but we need version {}", version,
                         this.nodeVersion);
                     return false;

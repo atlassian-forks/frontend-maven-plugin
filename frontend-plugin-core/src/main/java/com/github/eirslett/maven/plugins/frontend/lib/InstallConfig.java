@@ -9,6 +9,7 @@ public interface InstallConfig {
   CacheResolver getCacheResolver();
   Platform getPlatform();
   boolean isUseNodeVersionManager();
+  File getInstalledNodeDirectory();
 }
 
 final class DefaultInstallConfig implements InstallConfig {
@@ -18,17 +19,20 @@ final class DefaultInstallConfig implements InstallConfig {
   private final CacheResolver cacheResolver;
   private final Platform platform;
   private final boolean useNodeVersionManager;
+  private final File installedNodeDirectory;
   
   public DefaultInstallConfig(File installDirectory,
                               File workingDirectory,
                               CacheResolver cacheResolver,
                               Platform platform,
-                              boolean useNodeVersionManager) {
+                              boolean useNodeVersionManager,
+                              File installedNodeDirectory) {
     this.installDirectory = installDirectory;
     this.workingDirectory = workingDirectory;
     this.cacheResolver = cacheResolver;
     this.platform = platform;
     this.useNodeVersionManager = useNodeVersionManager;
+    this.installedNodeDirectory = installedNodeDirectory;
   }
 
   @Override
@@ -58,5 +62,10 @@ final class DefaultInstallConfig implements InstallConfig {
   @Override
   public boolean isUseNodeVersionManager() {
     return useNodeVersionManager;
+  }
+
+  @Override
+  public File getInstalledNodeDirectory() {
+    return this.installedNodeDirectory;
   }
 }

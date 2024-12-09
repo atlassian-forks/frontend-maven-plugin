@@ -22,17 +22,18 @@ public final class FrontendPluginFactory {
     private final File installDirectory;
     private final CacheResolver cacheResolver;
     private final boolean useNodeVersionManager;
-    private String nodeVersion;
+    private final File installedNodeDirectory;
 
     public FrontendPluginFactory(File workingDirectory, File installDirectory){
-        this(workingDirectory, installDirectory, getDefaultCacheResolver(installDirectory), false);
+        this(workingDirectory, installDirectory, getDefaultCacheResolver(installDirectory), false, null);
     }
 
-    public FrontendPluginFactory(File workingDirectory, File installDirectory, CacheResolver cacheResolver, boolean useNodeVersionManager){
+    public FrontendPluginFactory(File workingDirectory, File installDirectory, CacheResolver cacheResolver, boolean useNodeVersionManager, File installedNodeDirectory){
         this.workingDirectory = workingDirectory;
         this.installDirectory = installDirectory;
         this.cacheResolver = cacheResolver;
         this.useNodeVersionManager = useNodeVersionManager;
+        this.installedNodeDirectory = installedNodeDirectory;
 
         initializeGlobalCache();
     }
@@ -133,7 +134,7 @@ public final class FrontendPluginFactory {
     }
 
     private void initializeGlobalCache() {
-        InstallConfig installConfig = new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform, useNodeVersionManager);
+        InstallConfig installConfig = new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform, useNodeVersionManager, installedNodeDirectory);
         GlobalCache.setInstallConfig(installConfig);
 
         if (installConfig.isUseNodeVersionManager()) {

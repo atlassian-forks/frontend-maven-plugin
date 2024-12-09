@@ -21,10 +21,6 @@ public class VersionManagerCache {
         return versionManagerType;
     }
 
-    public boolean isVersionManagerAvailable() {
-        return versionManagerType != null;
-    }
-
     public File getNodeExecutable() {
         return nodeExecutable;
     }
