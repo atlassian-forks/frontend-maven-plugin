@@ -102,8 +102,10 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
     if (!isNull(configuredNodeDirectory) && configuredNodeDirectory.exists()) return configuredNodeDirectory;
 
     String systemNodeDirectoryPath = System.getenv("AFMP_INSTALLED_NODE_DIRECTORY");
-    File systemNodeDirectory = new File(systemNodeDirectoryPath);
-    if (systemNodeDirectory.exists()) return systemNodeDirectory;
+    if (!isNull(systemNodeDirectoryPath)) {
+      File systemNodeDirectory = new File(systemNodeDirectoryPath);
+      if (systemNodeDirectory.exists()) return systemNodeDirectory;
+    }
 
     return null;
   }
