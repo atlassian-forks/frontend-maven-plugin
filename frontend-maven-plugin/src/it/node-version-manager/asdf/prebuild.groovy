@@ -1,3 +1,2 @@
 def p = "bash $basedir/install-asdf.sh".execute()
-p.waitFor()
-println p.text
+p.waitForProcessOutput(System.out, System.err)

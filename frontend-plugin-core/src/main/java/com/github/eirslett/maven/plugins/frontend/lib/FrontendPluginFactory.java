@@ -25,11 +25,7 @@ public final class FrontendPluginFactory {
     private String nodeVersion;
 
     public FrontendPluginFactory(File workingDirectory, File installDirectory){
-        this(workingDirectory, installDirectory, getDefaultCacheResolver(installDirectory));
-    }
-
-    public FrontendPluginFactory(File workingDirectory, File installDirectory, CacheResolver cacheResolver){
-        this(workingDirectory, installDirectory, cacheResolver, false);
+        this(workingDirectory, installDirectory, getDefaultCacheResolver(installDirectory), false);
     }
 
     public FrontendPluginFactory(File workingDirectory, File installDirectory, CacheResolver cacheResolver, boolean useNodeVersionManager){

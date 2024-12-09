@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
-import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerRunner;
+
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.CACHED;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.DOWNLOADED;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.INSTALLED;
@@ -35,7 +35,7 @@ public class NodeInstaller {
 
     private final Logger logger;
 
-    private final InstallConfig installConfig;
+    private final InstallConfig config;
 
     private final VersionManagerCache versionManagerCache;
 
@@ -45,7 +45,7 @@ public class NodeInstaller {
 
     NodeInstaller(InstallConfig config, VersionManagerCache versionManagerCache, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
         this.logger = LoggerFactory.getLogger(getClass());
-        this.installConfig = config;
+        this.config = config;
         this.archiveExtractor = archiveExtractor;
         this.fileDownloader = fileDownloader;
         this.versionManagerCache = versionManagerCache;
@@ -100,7 +100,7 @@ public class NodeInstaller {
         // use static lock object for a synchronized block
         synchronized (LOCK) {
             if (this.nodeDownloadRoot == null || this.nodeDownloadRoot.isEmpty()) {
-                this.nodeDownloadRoot = this.installConfig.getPlatform().getNodeDownloadRoot();
+                this.nodeDownloadRoot = this.config.getPlatform().getNodeDownloadRoot();
             }
 
             // try to install the standard way
@@ -110,7 +110,7 @@ public class NodeInstaller {
                 if (!this.nodeVersion.startsWith("v")) {
                     this.logger.warn("Node version does not start with naming convention 'v'.");
                 }
-                if (this.installConfig.getPlatform().isWindows()) {
+                if (this.config.getPlatform().isWindows()) {
                     if (npmProvided()) {
                         work = installNodeWithNpmForWindows();
                     } else {
@@ -128,7 +128,7 @@ public class NodeInstaller {
 
     private boolean nodeIsAlreadyInstalled() {
         try {
-            NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.installConfig, versionManagerCache);
+            NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.config, versionManagerCache);
             File nodeFile = executorConfig.getNodePath();
             if (nodeFile.exists()) {
                 final String version =
@@ -154,17 +154,17 @@ public class NodeInstaller {
     private AtlassianDevMetricsInstallationWork installNodeDefault() throws InstallationException {
         try {
             final String longNodeFilename =
-                this.installConfig.getPlatform().getLongNodeFilename(this.nodeVersion, false);
+                this.config.getPlatform().getLongNodeFilename(this.nodeVersion, false);
             String downloadUrl = this.nodeDownloadRoot
-                + this.installConfig.getPlatform().getNodeDownloadFilename(this.nodeVersion, false);
-            String classifier = this.installConfig.getPlatform().getNodeClassifier(this.nodeVersion);
+                + this.config.getPlatform().getNodeDownloadFilename(this.nodeVersion, false);
+            String classifier = this.config.getPlatform().getNodeClassifier(this.nodeVersion);
 
             File tmpDirectory = getTempDirectory();
 
             CacheDescriptor cacheDescriptor = new CacheDescriptor("node", this.nodeVersion, classifier,
-                this.installConfig.getPlatform().getArchiveExtension());
+                this.config.getPlatform().getArchiveExtension());
 
-            File archive = this.installConfig.getCacheResolver().resolve(cacheDescriptor);
+            File archive = this.config.getCacheResolver().resolve(cacheDescriptor);
 
             AtlassianDevMetricsInstallationWork work =
             downloadFileIfMissing(downloadUrl, archive, this.userName, this.password, this.httpHeaders);
@@ -255,17 +255,17 @@ public class NodeInstaller {
     private AtlassianDevMetricsInstallationWork installNodeWithNpmForWindows() throws InstallationException {
         try {
             final String longNodeFilename =
-                this.installConfig.getPlatform().getLongNodeFilename(this.nodeVersion, true);
+                this.config.getPlatform().getLongNodeFilename(this.nodeVersion, true);
             String downloadUrl = this.nodeDownloadRoot
-                + this.installConfig.getPlatform().getNodeDownloadFilename(this.nodeVersion, true);
-            String classifier = this.installConfig.getPlatform().getNodeClassifier(this.nodeVersion);
+                + this.config.getPlatform().getNodeDownloadFilename(this.nodeVersion, true);
+            String classifier = this.config.getPlatform().getNodeClassifier(this.nodeVersion);
 
             File tmpDirectory = getTempDirectory();
 
             CacheDescriptor cacheDescriptor = new CacheDescriptor("node", this.nodeVersion, classifier,
-                this.installConfig.getPlatform().getArchiveExtension());
+                this.config.getPlatform().getArchiveExtension());
 
-            File archive = this.installConfig.getCacheResolver().resolve(cacheDescriptor);
+            File archive = this.config.getCacheResolver().resolve(cacheDescriptor);
 
             AtlassianDevMetricsInstallationWork work =
             downloadFileIfMissing(downloadUrl, archive, this.userName, this.password, this.httpHeaders);
@@ -312,18 +312,18 @@ public class NodeInstaller {
 
     private AtlassianDevMetricsInstallationWork installNodeForWindows() throws InstallationException {
         final String downloadUrl = this.nodeDownloadRoot
-            + this.installConfig.getPlatform().getNodeDownloadFilename(this.nodeVersion, false);
+            + this.config.getPlatform().getNodeDownloadFilename(this.nodeVersion, false);
         try {
             File destinationDirectory = getInstallDirectory();
 
             File destination = new File(destinationDirectory, "node.exe");
 
-            String classifier = this.installConfig.getPlatform().getNodeClassifier(this.nodeVersion);
+            String classifier = this.config.getPlatform().getNodeClassifier(this.nodeVersion);
 
             CacheDescriptor cacheDescriptor =
                 new CacheDescriptor("node", this.nodeVersion, classifier, "exe");
 
-            File binary = this.installConfig.getCacheResolver().resolve(cacheDescriptor);
+            File binary = this.config.getCacheResolver().resolve(cacheDescriptor);
 
             AtlassianDevMetricsInstallationWork work =
             downloadFileIfMissing(downloadUrl, binary, this.userName, this.password, this.httpHeaders);
@@ -350,7 +350,7 @@ public class NodeInstaller {
     }
 
     private File getInstallDirectory() {
-        File installDirectory= new File(this.installConfig.getInstallDirectory(), INSTALL_PATH);
+        File installDirectory= new File(this.config.getInstallDirectory(), INSTALL_PATH);
 
         if (!installDirectory.exists()) {
             this.logger.debug("Creating install directory {}", installDirectory);
