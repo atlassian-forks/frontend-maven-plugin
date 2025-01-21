@@ -18,6 +18,9 @@ import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionMan
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.CACHED;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.DOWNLOADED;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.INSTALLED;
+import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.USER_PROVIDED;
+import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsInstallationWork.VERSION_MANAGER_PROVIDED;
+import static java.util.Objects.isNull;
 
 public class NodeInstaller {
 
@@ -42,6 +45,7 @@ public class NodeInstaller {
     private final ArchiveExtractor archiveExtractor;
 
     private final FileDownloader fileDownloader;
+    private final NodeExecutorConfig nodeExecutorConfig;
 
     NodeInstaller(InstallConfig config, VersionManagerCache versionManagerCache, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
         this.logger = LoggerFactory.getLogger(getClass());
@@ -49,6 +53,7 @@ public class NodeInstaller {
         this.archiveExtractor = archiveExtractor;
         this.fileDownloader = fileDownloader;
         this.versionManagerCache = versionManagerCache;
+        this.nodeExecutorConfig = new InstallNodeExecutorConfig(config, versionManagerCache);
     }
 
     public NodeInstaller setNodeVersion(String nodeVersion) {
@@ -119,6 +124,10 @@ public class NodeInstaller {
                 } else {
                     work = installNodeDefault();
                 }
+            } else if (nodeExecutorConfig.hasProvidedNode()) {
+                work = USER_PROVIDED;
+            } else if (nodeExecutorConfig.hasNodeVersionManagerNode()) {
+                work = VERSION_MANAGER_PROVIDED;
             } else {
                 work = INSTALLED;
             }
@@ -128,19 +137,17 @@ public class NodeInstaller {
 
     private boolean nodeIsAlreadyInstalled() {
         try {
-            NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.config, versionManagerCache);
-
-            File nodeFile = executorConfig.getNodePath();
+            File nodeFile = nodeExecutorConfig.getNodePath();
             if (nodeFile.exists()) {
                 final String version =
-                    new NodeExecutor(executorConfig, Arrays.asList("--version"), null).executeAndGetResult(logger);
+                    new NodeExecutor(nodeExecutorConfig, Arrays.asList("--version"), null).executeAndGetResult(logger);
 
                 if (version.equals(this.nodeVersion)) {
                     this.logger.info("Node {} is already installed.", version);
                     return true;
                 } else {
-                    if (executorConfig.hasProvidedNode()) {
-                        this.logger.warn("Provided node executable has version {}, but {} was requested in configuration. Node executable: {}", version, this.nodeVersion, executorConfig.getNodePath());
+                    if (nodeExecutorConfig.hasProvidedNode()) {
+                        this.logger.warn("Provided node executable has version {}, but {} was requested in configuration. Node executable: {}", version, this.nodeVersion, nodeExecutorConfig.getNodePath());
                         return true;
                     }
                     this.logger.info("Node {} was installed, but we need version {}", version,

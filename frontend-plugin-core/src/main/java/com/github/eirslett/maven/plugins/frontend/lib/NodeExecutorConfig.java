@@ -19,6 +19,7 @@ public interface NodeExecutorConfig {
   File getWorkingDirectory();
   Platform getPlatform();
   boolean hasProvidedNode();
+  boolean hasNodeVersionManagerNode();
 }
 
 final class InstallNodeExecutorConfig implements NodeExecutorConfig {
@@ -47,7 +48,7 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
   @Override
   public File getNodePath() {
     if (hasProvidedNode()) return getInstalledNodeExecutable();
-    if (versionManagerCache != null && versionManagerCache.isNodeAvailable()) return versionManagerCache.getNodeExecutable();
+    if (hasNodeVersionManagerNode()) return versionManagerCache.getNodeExecutable();
 
     String nodeExecutable = getPlatform().isWindows() ? NODE_WINDOWS : NODE_DEFAULT;
     return new File(installConfig.getInstallDirectory() + nodeExecutable);
@@ -56,7 +57,7 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
   @Override
   public File getNpmPath() {
     if (hasProvidedNode()) return getInstalledNpmExecutable();
-    if (versionManagerCache != null && versionManagerCache.isNodeAvailable()) return versionManagerCache.getNpmExecutable();
+    if (hasNodeVersionManagerNode()) return versionManagerCache.getNpmExecutable();
 
     return new File(installConfig.getInstallDirectory() + Utils.normalize(NPM));
   }
@@ -97,6 +98,17 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
     return installConfig.getPlatform();
   }
 
+  @Override
+  public boolean hasNodeVersionManagerNode() {
+    return versionManagerCache != null && versionManagerCache.isNodeAvailable();
+  }
+
+  @Override
+  public boolean hasProvidedNode() {
+    File nodeExecutable = getProvidedNodeDirectory();
+    return !isNull(nodeExecutable) && nodeExecutable.exists();
+  }
+
   private File getProvidedNodeDirectory() {
     File configuredNodeDirectory = installConfig.getInstalledNodeDirectory();
     if (!isNull(configuredNodeDirectory) && configuredNodeDirectory.exists()) return configuredNodeDirectory;
@@ -112,16 +124,10 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
 
   private File getInstalledNodeExecutable() {
     File nodeDirectory = getProvidedNodeDirectory();
-    if (getPlatform().isWindows()) {
+    if (installConfig.getPlatform().isWindows()) {
       return new File(nodeDirectory, "node.exe");
     }
     return new File(nodeDirectory, "node");
-  }
-
-  @Override
-  public boolean hasProvidedNode() {
-    File nodeExecutable = getProvidedNodeDirectory();
-    return !isNull(nodeExecutable) && nodeExecutable.exists();
   }
 
   private File getInstalledNpmExecutable() {
