@@ -35,22 +35,33 @@ public class FnmClient implements VersionManagerClient {
         String architecture = platform.getArchitectureName();
         String osCodename = platform.getCodename();
         String nodeOnPlatform = String.format("node-%s-%s-%s", nodeVersionWithV, osCodename, architecture);
-        Path path = Paths.get(fnmDir, "node-versions", nodeVersionWithV, nodeOnPlatform, "bin", "node");
 
+        if (installConfig.getPlatform().isWindows()) {
+            return Paths.get(fnmDir, "node-versions", nodeVersionWithV, "installation", "node.exe").toFile();
+        }
+
+        Path path = Paths.get(fnmDir, "node-versions", nodeVersionWithV, nodeOnPlatform, "bin", "node");
         if (Files.exists(path)) {
             return path.toFile();
         }
+
         return Paths.get(fnmDir, "node-versions", nodeVersionWithV, "installation", "bin", "node").toFile();
     }
 
     @Override
     public File getNpmExecutable(String nodeVersion) {
         File nodeExec = getNodeExecutable(nodeVersion);
+
+        if (installConfig.getPlatform().isWindows()) {
+            return Paths.get(nodeExec.getParent(), "node_modules", "npm", "bin", "npm-cli.js").toFile();
+        }
+
         return new File(nodeExec.getParent(), "npm");
     }
 
     private String getFnmDir() {
         String fnmDir = System.getenv("FNM_DIR");
+        System.out.println("XXX " + fnmDir);
         if (fnmDir != null) {
             Path path = Paths.get(fnmDir);
             if (Files.exists(path)) {
@@ -60,19 +71,26 @@ public class FnmClient implements VersionManagerClient {
 
         String home = System.getenv("HOME");
         if (home != null) {
-            Path path = Paths.get(home, ".fnm");
-            if (Files.exists(path)) {
-                return path.toString();
-            }
+            if (installConfig.getPlatform().isWindows()) {
+                Path path = Paths.get(home, "AppData", "Roaming", "fnm");
+                if (Files.exists(path)) {
+                    return path.toString();
+                }
+            } else {
+                Path path = Paths.get(home, ".fnm");
+                if (Files.exists(path)) {
+                    return path.toString();
+                }
 
-            path = Paths.get(home, "Library", "Application Support", "fnm");
-            if (Files.exists(path)) {
-                return path.toString();
-            }
+                path = Paths.get(home, "Library", "Application Support", "fnm");
+                if (Files.exists(path)) {
+                    return path.toString();
+                }
 
-            path = Paths.get(home, ".local", "share", "fnm");
-            if (Files.exists(path)) {
-                return path.toString();
+                path = Paths.get(home, ".local", "share", "fnm");
+                if (Files.exists(path)) {
+                    return path.toString();
+                }
             }
         }
 
