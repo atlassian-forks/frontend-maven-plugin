@@ -3,7 +3,7 @@
     <parent>
         <artifactId>frontend-plugins</artifactId>
         <groupId>com.github.eirslett</groupId>
-        <version>frontend-plugins-1.15.1-atlassian-3-92fed783</version>
+        <version>1.15.1-atlassian-4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
