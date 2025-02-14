@@ -4,7 +4,6 @@ import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionMan
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerRunner;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerType;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerLocator;
-import jdk.nashorn.internal.objects.Global;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +23,9 @@ public final class FrontendPluginFactory {
     private final boolean useNodeVersionManager;
     private final File installedNodeDirectory;
 
+    private InstallConfig installConfig;
+    private VersionManagerCache versionManagerCache;
+
     public FrontendPluginFactory(File workingDirectory, File installDirectory){
         this(workingDirectory, installDirectory, getDefaultCacheResolver(installDirectory), false, null);
     }
@@ -35,7 +37,7 @@ public final class FrontendPluginFactory {
         this.useNodeVersionManager = useNodeVersionManager;
         this.installedNodeDirectory = installedNodeDirectory;
 
-        initializeGlobalCache();
+        initializeGlobalConfig();
     }
 
     public BunInstaller getBunInstaller(ProxyConfig proxy) {
@@ -122,28 +124,27 @@ public final class FrontendPluginFactory {
     }
 
     private InstallConfig getInstallConfig() {
-        return GlobalCache.getInstallConfig();
+        assert installDirectory != null;
+        return installConfig;
     }
 
     private VersionManagerCache getVersionManagerCache() {
-        return GlobalCache.getVersionManagerCache();
+        assert versionManagerCache != null;
+        return versionManagerCache;
     }
 
     private static CacheResolver getDefaultCacheResolver(File root) {
         return new DirectoryCacheResolver(new File(root, DEFAULT_CACHE_PATH));
     }
 
-    private void initializeGlobalCache() {
-        InstallConfig installConfig = new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform, useNodeVersionManager, installedNodeDirectory);
-        GlobalCache.setInstallConfig(installConfig);
+    private void initializeGlobalConfig() {
+        installConfig = new DefaultInstallConfig(installDirectory, workingDirectory, cacheResolver, defaultPlatform, useNodeVersionManager, installedNodeDirectory);
 
         if (installConfig.isUseNodeVersionManager()) {
             VersionManagerType versionManagerType = getVersionManagerType(installConfig);
-            GlobalCache.setVersionManagerCache(
-                new VersionManagerCache(versionManagerType)
-            );
+            versionManagerCache = new VersionManagerCache(versionManagerType);
         } else {
-            GlobalCache.setVersionManagerCache(new VersionManagerCache());
+            versionManagerCache = new VersionManagerCache();
         }
     }
 
