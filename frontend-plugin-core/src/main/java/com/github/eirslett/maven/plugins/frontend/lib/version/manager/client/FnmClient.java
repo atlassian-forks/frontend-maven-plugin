@@ -61,7 +61,6 @@ public class FnmClient implements VersionManagerClient {
 
     private String getFnmDir() {
         String fnmDir = System.getenv("FNM_DIR");
-        System.out.println("XXX " + fnmDir);
         if (fnmDir != null) {
             Path path = Paths.get(fnmDir);
             if (Files.exists(path)) {
