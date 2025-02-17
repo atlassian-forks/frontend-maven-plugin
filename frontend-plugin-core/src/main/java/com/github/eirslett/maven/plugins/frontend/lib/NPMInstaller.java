@@ -103,11 +103,14 @@ public class NPMInstaller {
                 this.npmDownloadRoot = DEFAULT_NPM_DOWNLOAD_ROOT;
             }
 
-
             boolean npmProvided = npmProvided();
-            if (npmProvided) work = PROVIDED;
-            boolean npmInstalled = npmIsAlreadyInstalled();
-            if (npmInstalled) work = INSTALLED;
+            boolean npmInstalled = false;
+            if (npmProvided) {
+                work = PROVIDED;
+            } else {
+                npmInstalled = npmIsAlreadyInstalled();
+                if (npmInstalled) work = INSTALLED;
+            }
 
             if (!npmProvided && !npmInstalled) {
                 work = installNpm();
