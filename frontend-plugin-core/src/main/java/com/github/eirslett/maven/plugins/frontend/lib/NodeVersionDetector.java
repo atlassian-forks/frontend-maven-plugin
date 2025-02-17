@@ -95,9 +95,6 @@ public class NodeVersionDetector {
         // The order is important and should respect mises' ordering
         final List<String> allMiseConfigFilenames = new ArrayList<>();
 
-        allMiseConfigFilenames.add(format("%s/config.%s.toml", miseConfigDir, miseEnv));
-        allMiseConfigFilenames.add(format("%s/mise.%s.toml", miseConfigDir, miseEnv));
-
         allMiseConfigFilenames.add(".config/mise/config.toml");
         allMiseConfigFilenames.add("mise/config.toml");
         allMiseConfigFilenames.add("mise.toml");
@@ -118,6 +115,9 @@ public class NodeVersionDetector {
         allMiseConfigFilenames.add(format("mise/config.%s.local.toml", miseEnv));
         allMiseConfigFilenames.add(format(".mise/config.%s.local.toml", miseEnv));
         allMiseConfigFilenames.add(format(".mise.%s.local.toml", miseEnv));
+
+        allMiseConfigFilenames.add(format("%s/config.%s.toml", miseConfigDir, miseEnv));
+        allMiseConfigFilenames.add(format("%s/mise.%s.toml", miseConfigDir, miseEnv));
 
         return allMiseConfigFilenames;
     }
