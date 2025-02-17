@@ -159,7 +159,8 @@ public final class FrontendPluginFactory {
     }
 
     public void loadNodeVersionManager(String nodeVersion) {
-        if (getInstallConfig().isUseNodeVersionManager()) {
+        InstallConfig installConfig = getInstallConfig();
+        if (installConfig.isUseNodeVersionManager() && !ProvidedNodeHelper.hasProvidedNode(installConfig)) {
             VersionManagerType versionManagerType = getVersionManagerType(getInstallConfig());
             if (versionManagerType != null) {
                 getVersionManagerRunner().populateCacheForVersion(nodeVersion);

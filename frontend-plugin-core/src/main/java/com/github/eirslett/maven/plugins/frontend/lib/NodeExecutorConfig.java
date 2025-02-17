@@ -105,25 +105,11 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
 
   @Override
   public boolean hasProvidedNode() {
-    File nodeExecutable = getProvidedNodeDirectory();
-    return !isNull(nodeExecutable) && nodeExecutable.exists();
-  }
-
-  private File getProvidedNodeDirectory() {
-    File configuredNodeDirectory = installConfig.getInstalledNodeDirectory();
-    if (!isNull(configuredNodeDirectory) && configuredNodeDirectory.exists()) return configuredNodeDirectory;
-
-    String systemNodeDirectoryPath = System.getenv("AFMP_INSTALLED_NODE_DIRECTORY");
-    if (!isNull(systemNodeDirectoryPath)) {
-      File systemNodeDirectory = new File(systemNodeDirectoryPath);
-      if (systemNodeDirectory.exists()) return systemNodeDirectory;
-    }
-
-    return null;
+    return ProvidedNodeHelper.hasProvidedNode(installConfig);
   }
 
   private File getInstalledNodeExecutable() {
-    File nodeDirectory = getProvidedNodeDirectory();
+    File nodeDirectory = ProvidedNodeHelper.getProvidedNodeDirectory(installConfig);
     if (installConfig.getPlatform().isWindows()) {
       return new File(nodeDirectory, "node.exe");
     }
@@ -131,7 +117,7 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
   }
 
   private File getInstalledNpmExecutable() {
-    File nodeDirectory = getProvidedNodeDirectory();
+    File nodeDirectory = ProvidedNodeHelper.getProvidedNodeDirectory(installConfig);
     File npmCli = new File(nodeDirectory, "npm");
     if (npmCli.exists()) return npmCli;
 
