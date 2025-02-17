@@ -52,6 +52,14 @@ Only Atlassians may release a new version, [follow this guide](https://hello.atl
 
 ## Usage guidance
 
+### Using Node Version Manager
+
+By default, node based goals will try to use a node available from one of supported node version managers (`fnm`, `mise`, `asdf`, `nvm`, `nvs`). If a given node version is not available `frontend-maven-plugin` will fallback to standard installation. You can disable this behaviour with `useNodeVersionManager` configuration property.
+
+### Providing already installed node
+
+You can now specify the directory where node is already installed using `installedNodeDirectory` property or `AFMP_INSTALLED_NODE_DIRECTORY` environment variable.
+
 ### Format of the Node version
 
 It shouldn't matter if the `v` prefix is present, e.g. `14.8.0` and `v14.8.0`.

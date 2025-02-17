@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -41,11 +43,14 @@ public class NPMInstaller {
 
     private final FileDownloader fileDownloader;
 
-    NPMInstaller(InstallConfig config, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
+    private final VersionManagerCache versionManagerCache;
+
+    NPMInstaller(InstallConfig config, VersionManagerCache versionManagerCache, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
         this.logger = LoggerFactory.getLogger(getClass());
         this.config = config;
         this.archiveExtractor = archiveExtractor;
         this.fileDownloader = fileDownloader;
+        this.versionManagerCache = versionManagerCache;
     }
 
     public NPMInstaller setNodeVersion(String nodeVersion) {
@@ -99,9 +104,13 @@ public class NPMInstaller {
             }
 
             boolean npmProvided = npmProvided();
-            if (npmProvided) work = PROVIDED;
-            boolean npmInstalled = npmIsAlreadyInstalled();
-            if (npmInstalled) work = INSTALLED;
+            boolean npmInstalled = false;
+            if (npmProvided) {
+                work = PROVIDED;
+            } else {
+                npmInstalled = npmIsAlreadyInstalled();
+                if (npmInstalled) work = INSTALLED;
+            }
 
             if (!npmProvided && !npmInstalled) {
                 work = installNpm();

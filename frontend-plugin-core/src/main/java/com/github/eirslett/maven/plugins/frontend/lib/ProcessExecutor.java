@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,29 +20,20 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.slf4j.Logger;
 
-final class ProcessExecutionException extends Exception {
-    private static final long serialVersionUID = 1L;
-
-    public ProcessExecutionException(String message) {
-        super(message);
-    }
-    public ProcessExecutionException(Throwable cause) {
-        super(cause);
-    }
-}
-
-final class ProcessExecutor {
+public final class ProcessExecutor {
     private final static String PATH_ENV_VAR = "PATH";
 
-    private final Map<String, String> environment;
+    private Map<String, String> environment;
     private CommandLine commandLine;
     private final Executor executor;
+    private final Platform platform;
 
     public ProcessExecutor(File workingDirectory, List<String> paths, List<String> command, Platform platform, Map<String, String> additionalEnvironment){
         this(workingDirectory, paths, command, platform, additionalEnvironment, 0);
     }
 
     public ProcessExecutor(File workingDirectory, List<String> paths, List<String> command, Platform platform, Map<String, String> additionalEnvironment, long timeoutInSeconds) {
+        this.platform = platform;
         this.environment = createEnvironment(paths, platform, additionalEnvironment);
         this.commandLine = createCommandLine(command);
         this.executor = createExecutor(workingDirectory, timeoutInSeconds);
@@ -64,7 +56,14 @@ final class ProcessExecutor {
         return execute(logger, stdout, stdout);
     }
 
-    private int execute(final Logger logger, final OutputStream stdout, final OutputStream stderr)
+    public int execute(List<String> command, List<String> paths, final Logger logger, final OutputStream stdout, final OutputStream stderr)
+        throws ProcessExecutionException {
+        this.commandLine = createCommandLine(command);
+        this.environment = createEnvironment(paths, platform, Collections.emptyMap());
+        return execute(logger, stdout, stderr);
+    }
+
+    public int execute(final Logger logger, final OutputStream stdout, final OutputStream stderr)
             throws ProcessExecutionException {
         logger.debug("Executing command line {}", commandLine);
         try {

@@ -66,6 +66,19 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
     private RepositorySystemSession repositorySystemSession;
 
     /**
+     * Enables node installation using node version manager
+     */
+    @Parameter(property = "useNodeVersionManager", defaultValue = "true")
+    private boolean useNodeVersionManager;
+
+    /**
+     * Directory with an existing installation of node
+     * Also can be provided as environment variable AFMP_INSTALLED_NODE_DIRECTORY
+     */
+    @Parameter(property = "installedNodeDirectory")
+    private File installedNodeDirectory;
+
+    /**
      * Determines if this execution should be skipped.
      */
     private boolean skipTestPhase() {
@@ -97,8 +110,10 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
                 installDirectory = workingDirectory;
             }
             try {
-                execute(new FrontendPluginFactory(workingDirectory, installDirectory,
-                        new RepositoryCacheResolver(repositorySystemSession)));
+                execute(new FrontendPluginFactory(
+                            workingDirectory, installDirectory,
+                            new RepositoryCacheResolver(repositorySystemSession),
+                            useNodeVersionManager, installedNodeDirectory));
             } catch (TaskRunnerException e) {
                 if (testFailureIgnore && isTestingPhase()) {
                     getLog().error("There are test failures.\nFailed to run task: " + e.getMessage(), e);
