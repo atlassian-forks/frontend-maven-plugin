@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - [DCA11Y-1145]: Added support for using already installed node from default install directory of node version manager (fnm, mise, asdf, nvm, nvs). Use of version manager is enabled by default and can be controlled with `useNodeVersionManager` configuration property.
+- [DCA11Y-1145]: Added support for explicitly defining node installation directory with `installedNodeDirectory` configuration property.
 
 ### Changed
 - [DCA11Y-1145]: `nodeVersion` property is not required any more, if `useNodeVersionManager` is not set to false
