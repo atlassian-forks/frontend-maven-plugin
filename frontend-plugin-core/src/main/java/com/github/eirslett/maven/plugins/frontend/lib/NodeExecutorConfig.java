@@ -1,6 +1,11 @@
 package com.github.eirslett.maven.plugins.frontend.lib;
 
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
+
 import java.io.File;
+import java.nio.file.Paths;
+
+import static java.util.Objects.isNull;
 
 public interface NodeExecutorConfig {
   File getNodePath();
@@ -13,6 +18,8 @@ public interface NodeExecutorConfig {
   File getInstallDirectory();
   File getWorkingDirectory();
   Platform getPlatform();
+  boolean hasProvidedNode();
+  boolean hasNodeVersionManagerNode();
 }
 
 final class InstallNodeExecutorConfig implements NodeExecutorConfig {
@@ -27,18 +34,31 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
 
   private final InstallConfig installConfig;
 
+  private final VersionManagerCache versionManagerCache;
+
   public InstallNodeExecutorConfig(InstallConfig installConfig) {
+    this(installConfig, null);
+  }
+
+  public InstallNodeExecutorConfig(InstallConfig installConfig, VersionManagerCache versionManagerCache) {
     this.installConfig = installConfig;
+    this.versionManagerCache = versionManagerCache;
   }
 
   @Override
   public File getNodePath() {
+    if (hasProvidedNode()) return getInstalledNodeExecutable();
+    if (hasNodeVersionManagerNode()) return versionManagerCache.getNodeExecutable();
+
     String nodeExecutable = getPlatform().isWindows() ? NODE_WINDOWS : NODE_DEFAULT;
     return new File(installConfig.getInstallDirectory() + nodeExecutable);
   }
 
   @Override
   public File getNpmPath() {
+    if (hasProvidedNode()) return getInstalledNpmExecutable();
+    if (hasNodeVersionManagerNode()) return versionManagerCache.getNpmExecutable();
+
     return new File(installConfig.getInstallDirectory() + Utils.normalize(NPM));
   }
 
@@ -76,5 +96,34 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
   @Override
   public Platform getPlatform() {
     return installConfig.getPlatform();
+  }
+
+  @Override
+  public boolean hasNodeVersionManagerNode() {
+    return versionManagerCache != null && versionManagerCache.isNodeAvailable();
+  }
+
+  @Override
+  public boolean hasProvidedNode() {
+    return ProvidedNodeHelper.hasProvidedNode(installConfig);
+  }
+
+  private File getInstalledNodeExecutable() {
+    File nodeDirectory = ProvidedNodeHelper.getProvidedNodeDirectory(installConfig);
+    if (installConfig.getPlatform().isWindows()) {
+      return new File(nodeDirectory, "node.exe");
+    }
+    return new File(nodeDirectory, "node");
+  }
+
+  private File getInstalledNpmExecutable() {
+    File nodeDirectory = ProvidedNodeHelper.getProvidedNodeDirectory(installConfig);
+    File npmCli = new File(nodeDirectory, "npm");
+    if (npmCli.exists()) return npmCli;
+
+    npmCli = Paths.get(nodeDirectory.getParent(), "lib", "/node_modules/npm/bin/npm-cli.js").toFile();
+    if (npmCli.exists()) return npmCli;
+
+    throw new RuntimeException("Npm cli couldn't be found for provided node directory.");
   }
 }

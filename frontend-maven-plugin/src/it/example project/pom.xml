@@ -16,6 +16,10 @@
         <!-- NB! Set <version> to the latest released version of frontend-maven-plugin, like in README.md -->
         <version>@project.version@</version>
 
+        <configuration>
+          <useNodeVersionManager>false</useNodeVersionManager>
+        </configuration>
+
         <executions>
 
           <execution>

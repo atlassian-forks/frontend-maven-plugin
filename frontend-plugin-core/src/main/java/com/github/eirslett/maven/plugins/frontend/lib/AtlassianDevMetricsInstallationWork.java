@@ -13,7 +13,7 @@ public enum AtlassianDevMetricsInstallationWork {
      * Already provided by some other binary
      */
     PROVIDED,
-    /*
+    /**
      * Already installed, no work required
      */
     INSTALLED,
@@ -24,7 +24,15 @@ public enum AtlassianDevMetricsInstallationWork {
     /**
      * Had to go off and download the binaries
      */
-    DOWNLOADED;
+    DOWNLOADED,
+    /**
+     * Node executable provided from one of node version managers
+     */
+    VERSION_MANAGER_PROVIDED,
+    /**
+     * Node executable path provided by the user
+     */
+    USER_PROVIDED;
 
     @Override
     public String toString() {
