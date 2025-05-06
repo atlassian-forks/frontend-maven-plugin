@@ -5,21 +5,24 @@ import com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporte
 import com.github.eirslett.maven.plugins.frontend.lib.IncrementalBuildExecutionDigest.Execution;
 import com.github.eirslett.maven.plugins.frontend.lib.IncrementalBuildExecutionDigest.Execution.Runtime;
 import com.github.eirslett.maven.plugins.frontend.lib.IncrementalBuildExecutionDigest.ExecutionCoordinates;
-import org.apache.commons.codec.digest.MurmurHash3;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -383,16 +386,30 @@ public class IncrementalMojoHelper {
         return files;
     }
 
-    private static void addTrackedFile(Collection<Execution.File> files, Path file) {
+    public static void addTrackedFile(Collection<Execution.File> files, Path file) {
         try {
-            byte[] fileBytes = Files.readAllBytes(file);
-            // Requirements for hash function: 1 - single byte change is
-            // highly likely to result in a different hash, 2 - fast, baby fast!
-            long[] hash = MurmurHash3.hash128x64(fileBytes);
-            String hashString = Arrays.toString(hash);
-            files.add(new Execution.File(file.toString(), fileBytes.length, hashString));
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            long fileSize = 0;
+
+            try (InputStream is = Files.newInputStream(file);
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+
+                byte[] buffer = new byte[1024*1024];
+                int bytesRead;
+                while ((bytesRead = bis.read(buffer)) != -1) {
+                    digest.update(buffer, 0, bytesRead);
+                    fileSize += bytesRead;
+                }
+            }
+
+            byte[] hashBytes = digest.digest();
+            String hashString = Base64.getEncoder().encodeToString(hashBytes);
+
+            files.add(new Execution.File(file.toString(), fileSize, hashString));
         } catch (IOException exception) {
             throw new RuntimeException(format("Failed to read file: %s", file), exception);
+        } catch(NoSuchAlgorithmException exception) {
+            throw new RuntimeException(format("Failed to calculate SHA for file: %s", file), exception);
         }
     }
 
