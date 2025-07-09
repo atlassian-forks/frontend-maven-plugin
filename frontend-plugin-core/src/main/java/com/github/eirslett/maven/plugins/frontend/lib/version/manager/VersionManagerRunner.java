@@ -1,13 +1,10 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
-import com.github.eirslett.maven.plugins.frontend.lib.Utils;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerClient;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 public class VersionManagerRunner {
 
@@ -30,10 +27,12 @@ public class VersionManagerRunner {
         this.versionManagerCache.setNodeExecutable(versionManagerClient.getNodeExecutable(nodeVersion));
         this.versionManagerCache.setNpmExecutable(versionManagerClient.getNpmExecutable(nodeVersion));
 
+        VersionManagerType versionManagerType = versionManagerCache.getVersionManagerType();
+
         if (versionManagerCache.isNodeAvailable()) {
-            logger.info("Using {} version manager. Requested node version {} is already installed", versionManagerCache.getVersionManagerType(), nodeVersion);
+            logger.info("Using {} version manager. Requested node version {} is already installed", versionManagerType, nodeVersion);
         } else {
-            logger.info("Requested node version {} is not installed in version manager", nodeVersion);
+            logger.info("Using {} version manager. Requested node version {} is not installed", versionManagerType, nodeVersion);
         }
     }
 }
