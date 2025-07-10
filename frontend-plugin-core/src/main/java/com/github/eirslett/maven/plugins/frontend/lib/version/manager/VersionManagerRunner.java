@@ -31,9 +31,9 @@ public class VersionManagerRunner {
         this.versionManagerCache.setNpmExecutable(versionManagerClient.getNpmExecutable(nodeVersion));
 
         if (versionManagerCache.isNodeAvailable()) {
-            logger.info("Using {} version manager. Requested node version {} is already installed", versionManagerCache.getVersionManagerType(), nodeVersion);
+            logger.info("Requested node version {} is available. Using it.", nodeVersion);
         } else {
-            logger.info("Requested node version {} is not installed in version manager", nodeVersion);
+            logger.info("Requested node version {} is not installed with version manager.", nodeVersion);
         }
     }
 }
