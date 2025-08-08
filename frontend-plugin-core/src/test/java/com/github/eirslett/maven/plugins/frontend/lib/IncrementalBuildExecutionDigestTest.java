@@ -34,7 +34,7 @@ public class IncrementalBuildExecutionDigestTest {
                         new Execution(
                                 "test-arguments",
                                 Collections.singletonMap("NODE_ENV", "test"),
-                                new HashSet<>(singletonList(new File("test-file.js", 12345, "abc123"))),
+                                new HashSet<>(singletonList(new File("test-file.js", 12345L, "abc123"))),
                                 new Runtime("node", "{\n" +
                                         "  '@atlassian/solicitorio': '3.4.0',\n" +
                                         "  npm: '8.15.0',\n" +
