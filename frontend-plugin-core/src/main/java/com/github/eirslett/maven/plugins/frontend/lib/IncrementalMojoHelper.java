@@ -5,13 +5,15 @@ import com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporte
 import com.github.eirslett.maven.plugins.frontend.lib.IncrementalBuildExecutionDigest.Execution;
 import com.github.eirslett.maven.plugins.frontend.lib.IncrementalBuildExecutionDigest.Execution.Runtime;
 import com.github.eirslett.maven.plugins.frontend.lib.IncrementalBuildExecutionDigest.ExecutionCoordinates;
-import org.apache.commons.codec.digest.MurmurHash3;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.hash.Hasher;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +21,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +33,9 @@ import java.util.Set;
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.github.eirslett.maven.plugins.frontend.lib.IncrementalBuildExecutionDigest.CURRENT_DIGEST_VERSION;
+import static com.google.common.hash.Hashing.murmur3_128;
 import static java.lang.String.format;
+import static java.nio.file.StandardOpenOption.READ;
 import static java.time.Instant.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
@@ -383,14 +386,21 @@ public class IncrementalMojoHelper {
         return files;
     }
 
-    private static void addTrackedFile(Collection<Execution.File> files, Path file) {
-        try {
-            byte[] fileBytes = Files.readAllBytes(file);
-            // Requirements for hash function: 1 - single byte change is
-            // highly likely to result in a different hash, 2 - fast, baby fast!
-            long[] hash = MurmurHash3.hash128x64(fileBytes);
-            String hashString = Arrays.toString(hash);
-            files.add(new Execution.File(file.toString(), fileBytes.length, hashString));
+    @VisibleForTesting
+    static void addTrackedFile(Collection<Execution.File> files, Path file) {
+        try (InputStream stream = Files.newInputStream(file, READ)) {
+            Hasher hasher = murmur3_128().newHasher();
+            // 16K is the largest before perf degradation on x86 (Raptor Lake) which
+            // should be a decent compromise for AArch64 which should prefer larger
+            byte[] buffer = new byte[16 * 1024];
+            int bytesRead;
+            long fileLength = 0;
+            while ((bytesRead = stream.read(buffer)) != -1) {
+                hasher.putBytes(buffer, 0, bytesRead);
+                fileLength += bytesRead;
+            }
+            String hashString = hasher.hash().toString();
+            files.add(new Execution.File(file.toString(), fileLength, hashString));
         } catch (IOException exception) {
             throw new RuntimeException(format("Failed to read file: %s", file), exception);
         }

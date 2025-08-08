@@ -98,14 +98,14 @@ public class IncrementalBuildExecutionDigest {
 
         public static class File {
             public String filename;
-            public Integer byteLength;
+            public Long byteLength;
             public String hash;
 
             public File() {
                 // for Jackson
             }
 
-            public File(String filename, Integer byteLength, String hash) {
+            public File(String filename, Long byteLength, String hash) {
                 this.filename = filename;
                 this.byteLength = byteLength;
                 this.hash = hash;
