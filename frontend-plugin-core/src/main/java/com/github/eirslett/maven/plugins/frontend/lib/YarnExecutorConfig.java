@@ -34,6 +34,12 @@ final class InstallYarnExecutorConfig implements YarnExecutorConfig {
         this.isYarnBerry = isYarnBerry;
     }
 
+    public InstallYarnExecutorConfig(InstallConfig installConfig, NodeExecutorConfig nodeExecutorConfig, final boolean isYarnBerry) {
+        this.installConfig = installConfig;
+        nodePath = nodeExecutorConfig.getNodePath();
+        this.isYarnBerry = isYarnBerry;
+    }
+
     @Override
     public File getNodePath() {
         return nodePath;

@@ -92,7 +92,7 @@ public final class FrontendPluginFactory {
     }
 
     public YarnRunner getYarnRunner(ProxyConfig proxy, String npmRegistryURL, boolean isYarnBerry) {
-        return new DefaultYarnRunner(new InstallYarnExecutorConfig(getInstallConfig(), isYarnBerry), proxy, npmRegistryURL);
+        return new DefaultYarnRunner(new InstallYarnExecutorConfig(getInstallConfig(), getExecutorConfig(), isYarnBerry), proxy, npmRegistryURL);
     }
 
     public GruntRunner getGruntRunner(){
