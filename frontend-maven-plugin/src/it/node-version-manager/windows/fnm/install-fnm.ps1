@@ -19,7 +19,7 @@ Invoke-WebRequest -Uri $zipUrl -OutFile $zipFilePath
 $destinationPath = $FNM_DIR
 Expand-Archive -Path $zipFilePath -DestinationPath $destinationPath -Force
 
-# Load the FNM environment and install Node.js version 20.15.1
-Invoke-Expression "$FNM_DIR\fnm.exe install 20.15.1 --fnm-dir $FNM_DIR"
+# Load the FNM environment and install Node.js version
+Invoke-Expression "$FNM_DIR\fnm.exe install 12.8.0 --fnm-dir $FNM_DIR"
 
 Write-Output "Finished FNM installation"

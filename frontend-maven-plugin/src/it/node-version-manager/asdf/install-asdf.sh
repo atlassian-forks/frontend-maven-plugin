@@ -12,4 +12,4 @@ echo "ASDF checked out";
 
 . "$HOME/.asdf/asdf.sh" \
   && asdf plugin add nodejs \
-  && asdf install nodejs v20.15.1
+  && asdf install nodejs v12.0.0

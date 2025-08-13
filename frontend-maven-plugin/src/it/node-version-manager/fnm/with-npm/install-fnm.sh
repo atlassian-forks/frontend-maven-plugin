@@ -9,4 +9,4 @@ mkdir "$FNM_DIR"
 curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_DIR" --skip-shell --force-install
 
 eval "$($HOME/.fnm/fnm env)" \
-        && $HOME/.fnm/fnm install 20.15.1
+        && $HOME/.fnm/fnm install 12.2.0
