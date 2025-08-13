@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [1.15.1-atlassian-4] - 2024-02-17
+## [1.15.1-atlassian-5] - 2025-08-13
+
+### Fixed
+- [DCA11Y-2101]: Node should actually be used from the version manager instead of whatever happened to be on the `PATH` environment variable when running `yarn` commands (Yarn Mojo).
+
+## [1.15.1-atlassian-4] - 2025-08-11
 
 ### Added
 - [DCA11Y-1145]: Added support for using already installed node from default install directory of node version manager (fnm, mise, asdf, nvm, nvs). Use of version manager is enabled by default and can be controlled with `useNodeVersionManager` configuration property.
@@ -49,11 +54,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [DCA11Y-1145]: Now tolerant of `v` missing or present at the start of a Node version
 
 
-
+[DCA11Y-2101]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2101
+[DCA11Y-1733]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1733
+[DCA11Y-1504]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1504
 [DCA11Y-1274]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1274
 [DCA11Y-1145]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1145
 
-[unreleased]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-3...HEAD
+[unreleased]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-5...HEAD
+[1.15.1-atlassian-5]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-4...frontend-plugins-1.15.1-atlassian-5
+[1.15.1-atlassian-4]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-3...frontend-plugins-1.15.1-atlassian-4
 [1.15.1-atlassian-3]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-2...frontend-plugins-1.15.1-atlassian-3
 [1.15.1-atlassian-2]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-1...frontend-plugins-1.15.1-atlassian-2
 [1.15.1-atlassian-1]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-1-16519678...frontend-plugins-1.15.1-atlassian-1
