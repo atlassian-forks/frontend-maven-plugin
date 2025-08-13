@@ -104,6 +104,10 @@ public final class YarnMojo extends AbstractFrontendMojo {
 
     @Override
     public synchronized void execute(FrontendPluginFactory factory) throws Exception {
+        // This faffing about getting the node version should happen after we've determined to execute
+        // unfortunately we need the runner to determine if we should execute
+        // if we don't load the node version manager before creating the runner then using the version
+        // manager won't work
         String nodeVersion = getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
 
         if (isNull(nodeVersion)) {

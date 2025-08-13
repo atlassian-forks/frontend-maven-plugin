@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [1.15.1-atlassian-5] - 2025-08-13
 
 ### Fixed
-- [DCA11Y-2101]: Node should actually be used from the version manager instead of whatever happened to be on the `PATH` environment variable when running `yarn` commands (Yarn Mojo).
+- [DCA11Y-2101]: Node should actually be used from the version manager instead of whatever happened to be on the `PATH` environment variable when running `yarn`, `bower`, `corepack`, `ember`, `grunt`, `gulp`, `jspm`, `karma`, `npx`, & `pnpm` commands (Yarn, Bower, Corepack, .... Mojos).
 
 ## [1.15.1-atlassian-4] - 2025-08-11
 

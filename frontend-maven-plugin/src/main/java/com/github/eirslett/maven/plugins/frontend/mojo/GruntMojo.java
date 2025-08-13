@@ -1,6 +1,8 @@
 package com.github.eirslett.maven.plugins.frontend.mojo;
 
 import com.github.eirslett.maven.plugins.frontend.lib.FrontendPluginFactory;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -13,7 +15,10 @@ import java.util.List;
 
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporter.Goal.GRUNT;
 import static com.github.eirslett.maven.plugins.frontend.lib.AtlassianDevMetricsReporter.incrementExecutionCount;
+import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionDetector.getNodeVersion;
+import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.getDownloadableVersion;
 import static com.github.eirslett.maven.plugins.frontend.mojo.MojoUtils.incrementalBuildEnabled;
+import static java.util.Objects.isNull;
 
 @Mojo(name="grunt", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
 public final class GruntMojo extends AbstractFrontendMojo {
@@ -23,6 +28,19 @@ public final class GruntMojo extends AbstractFrontendMojo {
      */
     @Parameter(property = "frontend.grunt.arguments")
     private String arguments;
+
+    /**
+     * The version of Node.js to install. IMPORTANT! Most Node.js version names start with 'v', for example
+     * 'v0.10.18'
+     */
+    @Parameter(property = "nodeVersion", defaultValue = "", required = false)
+    private String nodeVersion;
+
+    /**
+     * The path to the file that contains the Node version to use
+     */
+    @Parameter(property = "nodeVersionFile", defaultValue = "", required = false)
+    private String nodeVersionFile;
 
     /**
      * Files that should be checked for changes, in addition to the srcdir files.
@@ -69,6 +87,19 @@ public final class GruntMojo extends AbstractFrontendMojo {
         incrementExecutionCount(project.getArtifactId(), arguments, GRUNT, getFrontendMavenPluginVersion(), incrementalEnabled, !shouldExecute, () -> {
 
         if (shouldExecute) {
+            String nodeVersion = getNodeVersion(workingDirectory, this.nodeVersion, this.nodeVersionFile, project.getArtifactId(), getFrontendMavenPluginVersion());
+
+            if (isNull(nodeVersion)) {
+                throw new LifecycleExecutionException("Node version could not be detected from a file and was not set");
+            }
+
+            if (!NodeVersionHelper.validateVersion(nodeVersion)) {
+                throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
+            }
+
+            String validNodeVersion = getDownloadableVersion(nodeVersion);
+            factory.loadNodeVersionManager(validNodeVersion);
+
             factory.getGruntRunner().execute(arguments, environmentVariables);
 
             if (outputdir != null) {
