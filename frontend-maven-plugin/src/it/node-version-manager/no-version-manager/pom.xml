@@ -17,7 +17,8 @@
 
                 <configuration>
                     <!-- with useNodeVersionManager (enabled by default) and no node version manager available -->
-                    <nodeVersion>v20.15.1</nodeVersion>
+                    <!-- This version must be unique to ensure it's a valid test -->
+                    <nodeVersion>v12.5.0</nodeVersion>
                     <workingDirectory>${basedir}</workingDirectory>
                 </configuration>
 
@@ -38,7 +39,15 @@
                             <arguments>ci</arguments>
                         </configuration>
                     </execution>
-
+                    <execution>
+                        <id>get-node-version</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run node:version</arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

@@ -37,7 +37,15 @@
                             <arguments>install --frozen-lockfile</arguments>
                         </configuration>
                     </execution>
-
+                    <execution>
+                        <id>get-node-version</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run node:version</arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

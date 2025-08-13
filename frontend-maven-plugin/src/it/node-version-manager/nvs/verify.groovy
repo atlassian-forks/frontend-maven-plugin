@@ -6,3 +6,5 @@ assert new File(basedir, 'node_modules').exists() : "Node modules were not insta
 
 String buildLog = FileUtils.fileRead(new File(basedir, 'build.log'))
 assert buildLog.contains('Using NVS version manager') : 'Node has been installed with a different version manager'
+
+assert buildLog.contains('v12.7.0') : 'Node was not provided from the version manager'
