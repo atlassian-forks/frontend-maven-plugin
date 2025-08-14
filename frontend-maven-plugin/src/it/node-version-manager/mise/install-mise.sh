@@ -17,4 +17,4 @@ echo "MISE has been installed"
 eval "$(${HOME}/.mise/bin/mise activate bash --shims)"
 export MISE_NODE_GPG_VERIFY=0
 mise --version
-mise install node@12.4.0
+mise install node@18.2.0

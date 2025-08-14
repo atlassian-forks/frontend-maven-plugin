@@ -15,4 +15,4 @@ echo "NVS checked out";
 echo "NVS has installed itself into the shell"
 
 . "$NVS_HOME/nvs.sh" \
-  && nvs add v12.7.0
+  && nvs add v18.1.0
