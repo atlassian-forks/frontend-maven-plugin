@@ -75,7 +75,12 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
 
   @Override
   public File getCorepackPath() {
-    return new File(installConfig.getInstallDirectory() + Utils.normalize(COREPACK));
+    File corepackPath = new File(installConfig.getInstallDirectory() + Utils.normalize(COREPACK));
+    if (!corepackPath.exists() && versionManagerCache.getCorepackModuleDir().isPresent()) {
+      // Corepack in the folder should take precedence in case the user has specified a corepack version
+      corepackPath = Paths.get(versionManagerCache.getCorepackModuleDir().get().getPath(), "dist", "corepack.js").toFile();
+    }
+    return corepackPath;
   }
 
   @Override
@@ -87,7 +92,7 @@ final class InstallNodeExecutorConfig implements NodeExecutorConfig {
   public File getInstallDirectory() {
     return installConfig.getInstallDirectory();
   }
-  
+
   @Override
   public File getWorkingDirectory() {
     return installConfig.getWorkingDirectory();
