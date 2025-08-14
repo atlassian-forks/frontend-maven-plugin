@@ -1,6 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.lib;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eirslett.maven.plugins.frontend.lib.version.manager.VersionManagerCache;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,11 +39,14 @@ public class CorepackInstaller {
 
     private final FileDownloader fileDownloader;
 
-    CorepackInstaller(InstallConfig config, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
+    private final VersionManagerCache versionManagerCache;
+
+    CorepackInstaller(InstallConfig config, ArchiveExtractor archiveExtractor, FileDownloader fileDownloader, VersionManagerCache versionManagerCache) {
         this.logger = LoggerFactory.getLogger(getClass());
         this.config = config;
         this.archiveExtractor = archiveExtractor;
         this.fileDownloader = fileDownloader;
+        this.versionManagerCache = versionManagerCache;
     }
 
     public CorepackInstaller setNodeVersion(String nodeVersion) {
@@ -95,8 +100,13 @@ public class CorepackInstaller {
 
     private boolean corepackIsAlreadyInstalled() {
         try {
-            final File corepackPackageJson = new File(
-                this.config.getInstallDirectory() + Utils.normalize("/node/node_modules/corepack/package.json"));
+            File corepackPackageJson = new File(
+                    this.config.getInstallDirectory() + Utils.normalize("/node/node_modules/corepack/package.json"));
+
+            // Corepack in the folder should take precedence in case the user has specified a corepack version
+            if (!corepackPackageJson.exists() && versionManagerCache.getCorepackModuleDir().isPresent()) {
+                corepackPackageJson = Paths.get(versionManagerCache.getCorepackModuleDir().get().getPath(), "package.json").toFile();
+            }
             if (corepackPackageJson.exists()) {
                 if ("provided".equals(this.corepackVersion)) {
                     // Since we don't know which version it should be, we must assume that we have
@@ -204,8 +214,12 @@ public class CorepackInstaller {
             return;
         }
 
-        NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.config);
+        NodeExecutorConfig executorConfig = new InstallNodeExecutorConfig(this.config, versionManagerCache);
         File corepackJsExecutable = executorConfig.getCorepackPath();
+
+        if (!corepackJsExecutable.exists() && versionManagerCache.getCorepackModuleDir().isPresent()) {
+            corepackJsExecutable = Paths.get(versionManagerCache.getCorepackModuleDir().get().getPath(), "dist", "corepack.js").toFile();
+        }
 
         if (!corepackJsExecutable.exists()) {
             throw new InstallationException("Could not link to corepack executable, no corepack installation found.");
