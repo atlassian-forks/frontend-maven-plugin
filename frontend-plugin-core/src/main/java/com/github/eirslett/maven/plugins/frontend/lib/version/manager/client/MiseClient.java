@@ -4,10 +4,14 @@ import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
+
+import static java.util.Optional.empty;
 
 public class MiseClient implements VersionManagerClient {
     final Logger logger = LoggerFactory.getLogger(getClass());
@@ -38,6 +42,17 @@ public class MiseClient implements VersionManagerClient {
     public File getNpmExecutable(String nodeVersion) {
         File nodeExec = getNodeExecutable(nodeVersion);
         return Paths.get(nodeExec.getParentFile().getParent(), "/lib/node_modules/npm/bin/npm-cli.js").toFile();
+    }
+
+    @Nonnull
+    @Override
+    public Optional<File> getCorepackModuleDir(String nodeVersion) {
+        final Path path = Paths.get(getNodeExecutable(nodeVersion).getParentFile().getParent(), "lib", "node_modules", "corepack");
+        final File corepack = path.toFile();
+        if (!corepack.exists()) {
+            return empty();
+        }
+        return Optional.of(corepack);
     }
 
     private String getMiseDir() {

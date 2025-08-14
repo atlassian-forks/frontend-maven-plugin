@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [1.15.1-atlassian-5] - 2025-08-13
+## [1.15.1-atlassian-5] - 2025-08-14
 
 ### Fixed
 - [DCA11Y-2101]: Node should actually be used from the version manager instead of whatever happened to be on the `PATH` environment variable when running `yarn`, `bower`, `corepack`, `ember`, `grunt`, `gulp`, `jspm`, `karma`, `npx`, & `pnpm` commands (Yarn, Bower, Corepack, .... Mojos).
+- [DCA11Y-2115]: Corepack should be used from the version manager installation.
 
 ## [1.15.1-atlassian-4] - 2025-08-11
 
@@ -54,6 +55,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [DCA11Y-1145]: Now tolerant of `v` missing or present at the start of a Node version
 
 
+[DCA11Y-2115]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2115
 [DCA11Y-2101]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2101
 [DCA11Y-1733]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1733
 [DCA11Y-1504]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1504

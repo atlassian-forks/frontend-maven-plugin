@@ -1,13 +1,10 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
-import com.github.eirslett.maven.plugins.frontend.lib.Utils;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerClient;
 import com.github.eirslett.maven.plugins.frontend.lib.version.manager.client.VersionManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 public class VersionManagerRunner {
 
@@ -27,6 +24,7 @@ public class VersionManagerRunner {
     public void populateCacheForVersion(String nodeVersion) {
         logger.debug("Populating version manager cache for node: {}", nodeVersion);
 
+        this.versionManagerCache.setCorepackModuleDir(versionManagerClient.getCorepackModuleDir(nodeVersion).orElse(null));
         this.versionManagerCache.setNodeExecutable(versionManagerClient.getNodeExecutable(nodeVersion));
         this.versionManagerCache.setNpmExecutable(versionManagerClient.getNpmExecutable(nodeVersion));
 

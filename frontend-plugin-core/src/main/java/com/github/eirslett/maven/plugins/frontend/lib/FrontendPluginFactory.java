@@ -52,7 +52,7 @@ public final class FrontendPluginFactory {
     }
 
     public CorepackInstaller getCorepackInstaller(ProxyConfig proxy) {
-        return new CorepackInstaller(getInstallConfig(), new DefaultArchiveExtractor(), new DefaultFileDownloader(proxy));
+        return new CorepackInstaller(getInstallConfig(), new DefaultArchiveExtractor(), new DefaultFileDownloader(proxy), versionManagerCache);
     }
 
     public PnpmInstaller getPnpmInstaller(ProxyConfig proxy) {
