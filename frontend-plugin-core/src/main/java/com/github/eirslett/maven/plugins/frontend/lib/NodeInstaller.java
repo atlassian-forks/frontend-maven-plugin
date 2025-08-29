@@ -142,7 +142,7 @@ public class NodeInstaller {
                 final String version =
                     new NodeExecutor(nodeExecutorConfig, Arrays.asList("--version"), null).executeAndGetResult(logger);
 
-                if (version.equals(this.nodeVersion)) {
+                if (version.equals(this.nodeVersion) || (!this.nodeVersion.contains(".") && version.startsWith(this.nodeVersion))) {
                     this.logger.info("Node {} is already installed.", version);
                     return true;
                 } else {
