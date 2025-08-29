@@ -1,6 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager.client;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
 import com.github.eirslett.maven.plugins.frontend.lib.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,9 @@ public class FnmClient implements VersionManagerClient {
 
         // If `nodeVersion` is loosely defined, find the highest matching version
         if (!nodeVersionWithV.contains(".")) {
-            String actualVersion = findHighestMatchingVersion(fnmDir, nodeVersionWithV);
+            String actualVersion = NodeVersionHelper.findHighestMatchingInstalledVersion(
+                Paths.get(fnmDir, "node-versions"), nodeVersionWithV
+            );
 
             if (actualVersion == null) {
                 logger.debug("No matching version found for: {}", nodeVersionWithV);
@@ -115,45 +118,5 @@ public class FnmClient implements VersionManagerClient {
         }
 
         return null;
-    }
-
-    private String findHighestMatchingVersion(String fnmDir, String versionPrefix) {
-        if (fnmDir == null) {
-            return null;
-        }
-
-        Path nodeVersionsDir = Paths.get(fnmDir, "node-versions");
-        if (!Files.exists(nodeVersionsDir)) {
-            return null;
-        }
-
-        try {
-            return Files.list(nodeVersionsDir)
-                    .filter(Files::isDirectory)
-                    .map(path -> path.getFileName().toString())
-                    .filter(name -> name.startsWith(versionPrefix))
-                    .sorted((v1, v2) -> compareVersions(v2, v1)) // Sort descending
-                    .findFirst()
-                    .orElse(null);
-        } catch (Exception e) {
-            logger.debug("Error finding matching version for {}: {}", versionPrefix, e.getMessage());
-            return null;
-        }
-    }
-
-    private int compareVersions(String v1, String v2) {
-        String[] parts1 = v1.substring(1).split("\\.");
-        String[] parts2 = v2.substring(1).split("\\.");
-
-        int maxLength = Math.max(parts1.length, parts2.length);
-        for (int i = 0; i < maxLength; i++) {
-            int num1 = i < parts1.length ? Integer.parseInt(parts1[i]) : 0;
-            int num2 = i < parts2.length ? Integer.parseInt(parts2[i]) : 0;
-
-            if (num1 != num2) {
-                return Integer.compare(num1, num2);
-            }
-        }
-        return 0;
     }
 }
