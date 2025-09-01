@@ -4,12 +4,20 @@ import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.NodeVers
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.UNUSUAL_VALID_VERSIONS;
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.VALID_VERSION_PATTERN;
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.getDownloadableVersion;
 import static com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper.validateVersion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NodeVersionHelperTest {
@@ -48,6 +56,64 @@ public class NodeVersionHelperTest {
     public void testGetDownloadableVersion_shouldGiveUsTheLatestDownloadableVersion_forAGivenLooselyDefinedMajorVersion() {
         // Using Node 12 since there shouldn't be anymore releases
         assertEquals("v12.22.12", getDownloadableVersion("12"));
+    }
+
+    @Test
+    public void testFindHighestMatchingInstalledVersion_returnsHighestVersion() {
+        Path mockDir = Mockito.mock(Path.class);
+
+        Path[] versions = {
+            Paths.get("v18.0.0"),
+            Paths.get("v18.9.9"),
+            Paths.get("v19.5.0"),
+            Paths.get("v20.0.0"),
+            Paths.get("v20.1.0"),
+        };
+
+        try (MockedStatic<Files> filesMock = Mockito.mockStatic(Files.class)) {
+            filesMock.when(() -> Files.exists(mockDir)).thenReturn(true);
+            filesMock.when(() -> Files.list(mockDir)).thenReturn(Stream.of(versions));
+            for (Path version : versions) {
+                filesMock.when(() -> Files.isDirectory(version)).thenReturn(true);
+            }
+
+            String result = NodeVersionHelper.findHighestMatchingInstalledVersion(mockDir, "v18");
+            assertEquals("v18.9.9", result);
+        }
+    }
+
+    @Test
+    public void testFindHighestMatchingInstalledVersion_returnsNullIfNoMatch() {
+        Path mockDir = Mockito.mock(Path.class);
+
+        Path[] versions = {
+                Paths.get("v19.5.0"),
+                Paths.get("v20.0.0"),
+                Paths.get("v20.1.0"),
+        };
+
+        try (MockedStatic<Files> filesMock = Mockito.mockStatic(Files.class)) {
+            filesMock.when(() -> Files.exists(mockDir)).thenReturn(true);
+            filesMock.when(() -> Files.list(mockDir)).thenReturn(Stream.of(versions));
+            for (Path version : versions) {
+                filesMock.when(() -> Files.isDirectory(version)).thenReturn(true);
+            }
+
+            String result = NodeVersionHelper.findHighestMatchingInstalledVersion(mockDir, "v18");
+            assertNull(result);
+        }
+    }
+
+    @Test
+    public void testFindHighestMatchingInstalledVersion_returnsNullIfDirDoesNotExist() {
+        Path mockDir = Mockito.mock(Path.class);
+
+        try (MockedStatic<Files> filesMock = Mockito.mockStatic(Files.class)) {
+            filesMock.when(() -> Files.exists(mockDir)).thenReturn(false);
+
+            String result = NodeVersionHelper.findHighestMatchingInstalledVersion(mockDir, "v20");
+            assertNull(result);
+        }
     }
 
     @Test
