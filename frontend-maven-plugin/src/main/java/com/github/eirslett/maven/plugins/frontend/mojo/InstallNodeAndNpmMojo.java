@@ -119,8 +119,9 @@ public final class InstallNodeAndNpmMojo extends AbstractFrontendMojo {
             throw new LifecycleExecutionException("Node version (" + nodeVersion + ") is not valid. If you think it actually is, raise an issue");
         }
 
+        factory.loadNodeVersionManager(nodeVersion);
+
         String validNodeVersion = getDownloadableVersion(nodeVersion);
-        factory.loadNodeVersionManager(validNodeVersion);
 
         String nodeDownloadRoot = getNodeDownloadRoot();
         String npmDownloadRoot = getNpmDownloadRoot();

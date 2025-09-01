@@ -226,8 +226,16 @@ public class AtlassianDevMetricsReporter  {
     }
 
     public static String formatNodeVersionForMetric(String nodeVersion) {
-        return nodeVersion.substring(0, nodeVersion.indexOf('.'))
-                .replaceFirst("v", "");
+        String withoutV = nodeVersion.replaceFirst("v", "");
+        int dotIndex = withoutV.indexOf('.');
+
+        if (dotIndex == -1) {
+            // No dot found, return the whole version (e.g. "20" from "v20")
+            return withoutV;
+        }
+
+        // Dot found, return major version (e.g. "18" from "v18.17.0")
+        return withoutV.substring(0, dotIndex);
     }
 
     public static String getHostForMetric(String hostSetting, String defaultHost, boolean triedToUsePac, boolean failedToUsePac) {

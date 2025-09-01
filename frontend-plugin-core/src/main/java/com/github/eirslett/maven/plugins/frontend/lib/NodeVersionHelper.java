@@ -9,6 +9,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +22,6 @@ import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toSet;
@@ -273,6 +274,25 @@ public class NodeVersionHelper {
                 .findFirst();
     }
 
+    public static String findHighestMatchingInstalledVersion(Path nodeVersionsDir, String versionPrefix) {
+        if (nodeVersionsDir == null || !Files.exists(nodeVersionsDir)) {
+            return null;
+        }
+
+        try {
+            return Files.list(nodeVersionsDir)
+                    .filter(Files::isDirectory)
+                    .map(path -> path.getFileName().toString())
+                    .filter(name -> name.startsWith(versionPrefix))
+                    .sorted(new NodeVersionComparator().reversed())
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            log.debug("Error finding matching version for {}: {}", versionPrefix, e.getMessage());
+            return null;
+        }
+    }
+
     /**
      * When I grow up, I want to be a Java record class!
      */
@@ -290,25 +310,26 @@ public class NodeVersionHelper {
     static class NodeVersionComparator implements Comparator<String> {
         @Override
         public int compare(String firstVersion, String secondVersion) {
-            firstVersion = firstVersion.replaceFirst("v", "");
-            secondVersion = secondVersion.replaceFirst("v", "");
+            firstVersion = firstVersion.replaceFirst("^v", "");
+            secondVersion = secondVersion.replaceFirst("^v", "");
 
-            List<String> firstVersionParts = asList(firstVersion.split("\\."));
-            List<String> secondVersionParts = asList(secondVersion.split("\\."));
+            String[] firstParts = firstVersion.split("\\.");
+            String[] secondParts = secondVersion.split("\\.");
 
-            for (int partsIndex = 0; partsIndex < firstVersionParts.size(); partsIndex++) {
-                int delta = Integer.parseInt(firstVersionParts.get(partsIndex))
-                        - Integer.parseInt(secondVersionParts.get(partsIndex));
+            int maxLength = Math.max(firstParts.length, secondParts.length);
 
-                // handle the same version appearing twice
-                if (delta == 0 && partsIndex != firstVersionParts.size() -1) {
-                    continue;
+            for (int i = 0; i < maxLength; i++) {
+                int v1 = i < firstParts.length ? Integer.parseInt(firstParts[i]) : 0;
+                int v2 = i < secondParts.length ? Integer.parseInt(secondParts[i]) : 0;
+
+                int delta = v1 - v2;
+
+                if (delta != 0) {
+                    return delta;
                 }
-
-                return delta;
             }
 
-            throw new RuntimeException("Unexpectedly couldn't sort released node versions. Raise a bug report");
+            return 0;
         }
     }
 }

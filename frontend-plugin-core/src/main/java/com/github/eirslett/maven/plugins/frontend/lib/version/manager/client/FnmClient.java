@@ -1,6 +1,7 @@
 package com.github.eirslett.maven.plugins.frontend.lib.version.manager.client;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallConfig;
+import com.github.eirslett.maven.plugins.frontend.lib.NodeVersionHelper;
 import com.github.eirslett.maven.plugins.frontend.lib.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,21 @@ public class FnmClient implements VersionManagerClient {
         Platform platform = installConfig.getPlatform();
         String architecture = platform.getArchitectureName();
         String osCodename = platform.getCodename();
+
+        // If `nodeVersion` is loosely defined, find the highest matching version
+        if (!nodeVersionWithV.contains(".")) {
+            String actualVersion = NodeVersionHelper.findHighestMatchingInstalledVersion(
+                Paths.get(fnmDir, "node-versions"), nodeVersionWithV
+            );
+
+            if (actualVersion == null) {
+                logger.debug("No matching version found for: {}", nodeVersionWithV);
+                return null;
+            }
+
+            nodeVersionWithV = actualVersion;
+        }
+
         String nodeOnPlatform = String.format("node-%s-%s-%s", nodeVersionWithV, osCodename, architecture);
 
         if (installConfig.getPlatform().isWindows()) {
