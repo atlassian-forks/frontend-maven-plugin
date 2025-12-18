@@ -3,6 +3,7 @@ package com.github.eirslett.maven.plugins.frontend.lib;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,7 +19,12 @@ import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
+import org.apache.commons.exec.StreamPumper;
 import org.slf4j.Logger;
+
+import javax.annotation.Nonnull;
+
+import static java.util.Objects.requireNonNull;
 
 public final class ProcessExecutor {
     private final static String PATH_ENV_VAR = "PATH";
@@ -67,7 +73,10 @@ public final class ProcessExecutor {
             throws ProcessExecutionException {
         logger.debug("Executing command line {}", commandLine);
         try {
-            ExecuteStreamHandler streamHandler = new PumpStreamHandler(stdout, stderr);
+            // This will normally include the current maven module in multithreaded builds
+            // Kept deliberately short as Maven logs are already very wide
+            String executorName = Thread.currentThread().getName() + "-FE";
+            ExecuteStreamHandler streamHandler = new NamedPumpStreamHandler(stdout, stderr, executorName);
             executor.setStreamHandler(streamHandler);
 
             int exitValue = executor.execute(commandLine, environment);
@@ -157,6 +166,26 @@ public final class ProcessExecutor {
         @Override
         protected void processLine(final String line, final int logLevel) {
             logger.info(line);
+        }
+    }
+
+    // Minimal replacement for PumpStreamHandler that names its threads
+    private static final class NamedPumpStreamHandler extends PumpStreamHandler {
+        private final String name;
+
+        public NamedPumpStreamHandler(final OutputStream out, final OutputStream err, @Nonnull final String name) {
+            super(out, err, null);
+            this.name = requireNonNull(name, "name");
+        }
+
+        /**
+         * Should match the parent implementation, but need to override the thread name.
+         */
+        @Override
+        protected Thread createPump(final InputStream is, final OutputStream os, final boolean closeWhenExhausted) {
+            final Thread result = new Thread(new StreamPumper(is, os, closeWhenExhausted), name);
+            result.setDaemon(true);
+            return result;
         }
     }
 }
