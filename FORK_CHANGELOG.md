@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.15.1-atlassian-6] - 2025-12-18
+
+### Added
+- [DCA11Y-2444]: Useful thread names for frontend execution in multithreaded Maven builds instead of simply "Exec Stream Pumper"
+
 ## [1.15.1-atlassian-5] - 2025-08-14
 
 ### Fixed
@@ -55,6 +60,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [DCA11Y-1145]: Now tolerant of `v` missing or present at the start of a Node version
 
 
+[DCA11Y-2444]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2444
 [DCA11Y-2115]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2115
 [DCA11Y-2101]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2101
 [DCA11Y-1733]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1733
@@ -62,7 +68,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 [DCA11Y-1274]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1274
 [DCA11Y-1145]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1145
 
-[unreleased]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-5...HEAD
+[unreleased]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-6...HEAD
+[1.15.1-atlassian-6]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-5...frontend-plugins-1.15.1-atlassian-6
 [1.15.1-atlassian-5]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-4...frontend-plugins-1.15.1-atlassian-5
 [1.15.1-atlassian-4]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-3...frontend-plugins-1.15.1-atlassian-4
 [1.15.1-atlassian-3]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-2...frontend-plugins-1.15.1-atlassian-3
