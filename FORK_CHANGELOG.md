@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.15.4-atlassian-1] - 2026-07-17
+
+### Changed
+- [DCA11Y-3469]: Synced the fork with upstream frontend-maven-plugin 1.15.4. Notably, the forced `https.protocols=TLSv1.2` override is no longer applied when downloading. CI now tests against Java 11 and 21.
+
 ## [1.15.1-atlassian-6] - 2025-12-18
 
 ### Added
@@ -60,6 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [DCA11Y-1145]: Now tolerant of `v` missing or present at the start of a Node version
 
 
+[DCA11Y-3469]: https://hello.jira.atlassian.cloud/browse/DCA11Y-3469
 [DCA11Y-2444]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2444
 [DCA11Y-2115]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2115
 [DCA11Y-2101]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2101
@@ -68,7 +74,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 [DCA11Y-1274]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1274
 [DCA11Y-1145]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1145
 
-[unreleased]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-6...HEAD
+[unreleased]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.4-atlassian-1...HEAD
+[1.15.4-atlassian-1]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-6...frontend-plugins-1.15.4-atlassian-1
 [1.15.1-atlassian-6]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-5...frontend-plugins-1.15.1-atlassian-6
 [1.15.1-atlassian-5]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-4...frontend-plugins-1.15.1-atlassian-5
 [1.15.1-atlassian-4]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-3...frontend-plugins-1.15.1-atlassian-4
