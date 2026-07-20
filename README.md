@@ -4,11 +4,12 @@
 
 ## Intro
 
-First read the upstream [README](https://github.com/eirslett/frontend-maven-plugin)
+This is Atlassian's fork of the community [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin).
 
-## Purpose
+The fork tracks upstream closely and adds on a handful of changes that are not wanted upstream, but are useful to developing for Atlassian products.
 
-There are a few changes that are not wanted upstream, but are useful to developing for Atlassian products
+Because this fork stays close to upstream, the core concepts, goals, and configuration are identical. **Start with the upstream [README](https://github.com/eirslett/frontend-maven-plugin) for general usage**, then see the [Usage](#usage) section below for the fork-specific additions and behavioural changes.
+
 
 ## Goals
 
@@ -41,16 +42,28 @@ Prior to accepting your contributions we ask that you please follow the appropri
 * [CLA for corporate contributors](https://opensource.atlassian.com/corporate)
 * [CLA for individuals](https://opensource.atlassian.com/individual)
 
+### Versioning
+
+The fork's version tracks the upstream version with an `-atlassian-{version}` suffix (e.g. `1.15.1-atlassian-6`). Each new release increments the `{version}` part of the suffix. 
+
+After syncing with a new upstream version, the `{version}` counter should be reset back to `1`.
+
 ### Releasing
 
-Only Atlassians may release a new version, [follow this guide](https://hello.atlassian.net/wiki/spaces/~278062200/pages/1407390489/HOW+TO+Do+a+manual+maven+artifact+release).
+> Note: **Only Atlassians may release a new version**
 
-## Usage requirements
+To release a new version, run the [FMP-FMPM release plan](https://ecosystem-bamboo.internal.atlassian.com/browse/FMP-FMPM). The automation then automatically bumps the version for the next development iteration.
 
-* Java 8, until support is dropped from all DC products ([currently projected for 2026-04-19](https://hello.atlassian.net/wiki/spaces/DCCore/pages/3989804253/When+can+I+stop+supporting+Java+8+11+entirely+in+DC))
+## Requirements
+
+* Java 8
 * Maven 3.6 (because of upstream)
 
-## Usage guidance
+> **Note:** This fork must remain compatible with Java 8 until support is dropped from all DC products. See [When can I stop supporting Java 8/11 entirely in DC](https://hello.atlassian.net/wiki/spaces/DCCore/pages/3989804253/When+can+I+stop+supporting+Java+8+11+entirely+in+DC).
+
+## Usage
+
+The sections below cover the additions and behavioural changes introduced by this Atlassian fork.
 
 ### Using Node Version Manager
 
