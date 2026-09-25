@@ -71,7 +71,7 @@ public class IncrementalMojoHelper {
 
     private final ExecutionCoordinates coordinates;
     private final File targetDirectory;
-    private final File workingDirectory;
+    private final File incrementalWorkingDirectory;
     private final boolean isActive;
     private final Set<File> triggerFiles;
     private final Set<String> excludedFilenames;
@@ -79,10 +79,10 @@ public class IncrementalMojoHelper {
     private IncrementalBuildExecutionDigest digest;
     private Optional<Instant> startTimeForSavedTimeUpdate = empty();
 
-    public IncrementalMojoHelper(String activationFlag, ExecutionCoordinates coordinates, File targetDirectory, File workingDirectory, Set<File> triggerFiles, Set<String> excludedFilenames) {
+    public IncrementalMojoHelper(String activationFlag, ExecutionCoordinates coordinates, File targetDirectory, File incrementalWorkingDirectory, Set<File> triggerFiles, Set<String> excludedFilenames) {
         this.coordinates = requireNonNull(coordinates, "coordinates");
         this.targetDirectory = requireNonNull(targetDirectory, "targetDirectory");
-        this.workingDirectory = requireNonNull(workingDirectory, "workingDirectory");
+        this.incrementalWorkingDirectory = requireNonNull(incrementalWorkingDirectory, "incrementalWorkingDirectory");
         this.triggerFiles = isNull(triggerFiles) ? emptySet() : triggerFiles;
         this.excludedFilenames = isNull(excludedFilenames) ? emptySet() : excludedFilenames;
 
@@ -376,14 +376,25 @@ public class IncrementalMojoHelper {
         }
     }
 
-    private Set<Execution.File> createFilesDigest() throws IOException {
+    @VisibleForTesting
+    Set<Execution.File> createFilesDigest() throws IOException {
         final Set<Execution.File> files = new HashSet<>();
 
-        IncrementalVisitor visitor = new IncrementalVisitor(files, excludedFilenames);
-        Files.walkFileTree(workingDirectory.toPath(), visitor);
-        triggerFiles.forEach(file -> addTrackedFile(files, file.toPath()));
+        addTrackedPath(files, incrementalWorkingDirectory.toPath(), excludedFilenames);
+        for (File triggerFile : triggerFiles) {
+            addTrackedPath(files, triggerFile.toPath(), excludedFilenames);
+        }
 
         return files;
+    }
+
+    @VisibleForTesting
+    static void addTrackedPath(Set<Execution.File> files, Path path, Set<String> excludedFilenames) throws IOException {
+        if (Files.isDirectory(path)) {
+            Files.walkFileTree(path, new IncrementalVisitor(files, excludedFilenames));
+        } else {
+            addTrackedFile(files, path);
+        }
     }
 
     @VisibleForTesting

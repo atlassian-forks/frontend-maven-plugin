@@ -118,7 +118,7 @@ public final class NpmMojo extends AbstractFrontendMojo {
         NpmRunner runner = factory.getNpmRunner(getProxyConfig(), getRegistryUrl());
 
         ExecutionCoordinates coordinates = new ExecutionCoordinates(execution.getGoal(), execution.getExecutionId(), execution.getLifecyclePhase());
-        IncrementalMojoHelper incrementalHelper = new IncrementalMojoHelper(frontendIncremental, coordinates, getTargetDir(), workingDirectory, triggerFiles, excludedFilenames);
+        IncrementalMojoHelper incrementalHelper = new IncrementalMojoHelper(frontendIncremental, coordinates, getTargetDir(), getIncrementalWorkingDirectory(), triggerFiles, excludedFilenames);
 
         boolean incrementalEnabled = incrementalHelper.incrementalEnabled();
         boolean isIncremental = incrementalEnabled && incrementalHelper.canBeSkipped(arguments, runner.getRuntime(), environmentVariables, project.getArtifactId(), getFrontendMavenPluginVersion());
