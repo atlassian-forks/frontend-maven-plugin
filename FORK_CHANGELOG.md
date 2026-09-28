@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- [POSSUM-475]: Added `incrementalWorkingDirectory` so incremental digests can use a narrower scope without changing the process working directory.
+
+### Fixed
+- [POSSUM-475]: Trigger directories are now searched recursively as documented.
+
 ## [1.15.4-atlassian-1] - 2026-07-17
 
 ### Changed
@@ -65,6 +73,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [DCA11Y-1145]: Now tolerant of `v` missing or present at the start of a Node version
 
 
+[POSSUM-475]: https://bulldog.internal.atlassian.com/browse/POSSUM-475
 [DCA11Y-3469]: https://hello.jira.atlassian.cloud/browse/DCA11Y-3469
 [DCA11Y-2444]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2444
 [DCA11Y-2115]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2115

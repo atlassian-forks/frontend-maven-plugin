@@ -48,6 +48,13 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
     protected File workingDirectory;
 
     /**
+     * The base directory whose files determine whether an incremental execution can be skipped.
+     * Defaults to {@link #workingDirectory}.
+     */
+    @Parameter(property = "frontend.incrementalWorkingDirectory", required = false)
+    protected File incrementalWorkingDirectory;
+
+    /**
      * The base directory for installing node and npm.
      */
     @Parameter(property = "installDirectory", required = false)
@@ -165,5 +172,9 @@ public abstract class AbstractFrontendMojo extends AbstractMojo {
 
     File getTargetDir() {
         return new File(project.getBuild().getDirectory());
+    }
+
+    File getIncrementalWorkingDirectory() {
+        return incrementalWorkingDirectory == null ? workingDirectory : incrementalWorkingDirectory;
     }
 }
