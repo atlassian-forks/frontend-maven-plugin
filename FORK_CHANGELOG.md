@@ -6,12 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- [CCDX-2713]: Node, npm, Yarn and other downloaded archives are now reused from a chained local repository (`maven.repo.local.tail`) when the primary local repository does not have them, instead of being downloaded again.
+- [CCDX-2713]: A warning is now logged when a corrupted archive cannot be deleted, for example because it is in a read-only repository.
+
+## [1.15.4-atlassian-2] - 2026-09-28
+
 ### Added
 - [POSSUM-475]: Added `incrementalWorkingDirectory` so incremental digests can use a narrower scope without changing the process working directory.
 
 ### Fixed
 - [POSSUM-475]: Trigger directories are now searched recursively as documented.
-- [CCDX-2713]: Node, npm, Yarn and other downloaded archives are now reused from a chained local repository (`maven.repo.local.tail`) when the primary local repository does not have them, instead of being downloaded again.
 
 ## [1.15.4-atlassian-1] - 2026-07-17
 
@@ -74,6 +79,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - [DCA11Y-1145]: Now tolerant of `v` missing or present at the start of a Node version
 
 
+[CCDX-2713]: https://hello.jira.atlassian.cloud/browse/CCDX-2713
 [POSSUM-475]: https://bulldog.internal.atlassian.com/browse/POSSUM-475
 [DCA11Y-3469]: https://hello.jira.atlassian.cloud/browse/DCA11Y-3469
 [DCA11Y-2444]: https://hello.jira.atlassian.cloud/browse/DCA11Y-2444
@@ -84,7 +90,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 [DCA11Y-1274]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1274
 [DCA11Y-1145]: https://hello.jira.atlassian.cloud/browse/DCA11Y-1145
 
-[unreleased]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.4-atlassian-1...HEAD
+[unreleased]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.4-atlassian-2...HEAD
+[1.15.4-atlassian-2]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.4-atlassian-1...frontend-plugins-1.15.4-atlassian-2
 [1.15.4-atlassian-1]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-6...frontend-plugins-1.15.4-atlassian-1
 [1.15.1-atlassian-6]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-5...frontend-plugins-1.15.1-atlassian-6
 [1.15.1-atlassian-5]: https://github.com/atlassian-forks/frontend-maven-plugin/compare/frontend-plugins-1.15.1-atlassian-4...frontend-plugins-1.15.1-atlassian-5
