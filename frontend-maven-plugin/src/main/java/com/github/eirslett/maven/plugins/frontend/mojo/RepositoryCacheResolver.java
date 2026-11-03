@@ -4,6 +4,8 @@ import com.github.eirslett.maven.plugins.frontend.lib.CacheDescriptor;
 import com.github.eirslett.maven.plugins.frontend.lib.CacheResolver;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.LocalArtifactRequest;
+import org.eclipse.aether.repository.LocalArtifactResult;
 import org.eclipse.aether.repository.LocalRepositoryManager;
 
 import java.io.File;
@@ -20,10 +22,20 @@ public class RepositoryCacheResolver implements CacheResolver {
   @Override
   public File resolve(CacheDescriptor cacheDescriptor) {
     LocalRepositoryManager manager = repositorySystemSession.getLocalRepositoryManager();
+    DefaultArtifact artifact = createArtifact(cacheDescriptor);
     File localArtifact = new File(
         manager.getRepository().getBasedir(),
-        manager.getPathForLocalArtifact(createArtifact(cacheDescriptor))
+        manager.getPathForLocalArtifact(artifact)
     );
+    if (localArtifact.isFile()) {
+      return localArtifact;
+    }
+    // Reuse a copy from a chained local repository (maven.repo.local.tail), which the path above never sees.
+    LocalArtifactResult result = manager.find(repositorySystemSession, new LocalArtifactRequest(artifact, null, null));
+    File chainedArtifact = result.getFile();
+    if (chainedArtifact != null && chainedArtifact.isFile()) {
+      return chainedArtifact;
+    }
     return localArtifact;
   }
 

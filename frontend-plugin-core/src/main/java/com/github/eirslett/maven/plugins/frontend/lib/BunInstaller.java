@@ -136,7 +136,7 @@ public class BunInstaller {
                 if (e.getCause() instanceof EOFException) {
                     this.logger.error("The archive file {} is corrupted and will be deleted. "
                             + "Please try the build again.", archive.getPath());
-                    archive.delete();
+                    Utils.deleteCorruptedArchive(archive, this.logger);
                 }
                 throw e;
             }

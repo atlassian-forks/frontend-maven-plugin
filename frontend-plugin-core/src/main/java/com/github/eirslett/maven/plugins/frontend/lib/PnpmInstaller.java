@@ -158,7 +158,7 @@ public class PnpmInstaller {
                     // delete it to retry from scratch
                     this.logger.error("The archive file {} is corrupted and will be deleted. "
                             + "Please try the build again.", archive.getPath());
-                    archive.delete();
+                    Utils.deleteCorruptedArchive(archive, this.logger);
                     if (packageDirectory.exists()) {
                         FileUtils.deleteDirectory(packageDirectory);
                     }
